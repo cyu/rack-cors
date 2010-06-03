@@ -11,10 +11,16 @@ Gem::Specification.new do |s|
   s.authors = ["Calvin Yu"]
   s.date = %q{2010-06-02}
   s.email = %q{csyu77@gmail.com}
+  s.extra_rdoc_files = [
+    "README.rdoc"
+  ]
   s.files = [
-    "Rakefile",
+    ".gitignore",
+     "README.rdoc",
+     "Rakefile",
      "VERSION",
-     "lib/rack/cors.rb"
+     "lib/rack/cors.rb",
+     "rack-cors.gemspec"
   ]
   s.homepage = %q{http://github.com/cyu/rack-cors}
   s.rdoc_options = ["--charset=UTF-8"]
