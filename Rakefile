@@ -7,6 +7,7 @@ begin
     gemspec.homepage = "http://github.com/cyu/rack-cors"
     gemspec.authors = ["Calvin Yu"]
   end
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler not available. Install it with: gem install jeweler"
 end
