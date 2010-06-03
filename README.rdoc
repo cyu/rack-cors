@@ -1,0 +1,32 @@
+= Rack CORS Middleware
+
+Rack::Cors provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.  The CORS spec allows web applications to make cross domain AJAX calls without
+using workarounds such as JSONP.  For a thorough write up on CORS, see this blog post:
+
+http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/
+
+Or for all the gory details, you can read the spec here:
+
+http://www.w3.org/TR/access-control/#simple-cross-origin-request-and-actual-r
+
+
+Install the gem:
+
+  gem install rack-cors
+
+
+== Configuration
+
+You configure Rack::Cors by passing a block to the <tt>use</tt> command:
+
+  use Rack::Cors do |config|
+    config.allow do |allow|
+      allow.origins 'localhost:3000', '127.0.0.1:3000'
+
+      allow.resource '/file/list_all/', :headers => 'x-domain-token'
+
+      allow.resource '/file/at/*',
+          :methods => [:get, :post, :put, :delete],
+          :headers => 'x-domain-token'
+    end
+  end
