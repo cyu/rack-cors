@@ -1,8 +1,10 @@
+require 'logger'
+
 module Rack
   class Cors
-
-    def initialize(app)
+    def initialize(app, opts={})
       @app = app
+      @logger = opts[:logger]
       yield self if block_given?
     end
 
@@ -14,8 +16,19 @@ module Rack
     def call(env)
       cors_headers = nil
       if env['HTTP_ORIGIN']
+        debug(env) do
+          [ 'Incoming Headers:',
+            "  Origin: #{env['HTTP_ORIGIN']}",
+            "  Access-Control-Request-Method: #{env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']}",
+            "  Access-Control-Request-Headers: #{env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}"
+            ].join("\n")
+        end
         if env['REQUEST_METHOD'] == 'OPTIONS'
           headers = process_preflight(env)
+          debug(env) do
+            "Preflight Headers:\n" +
+                headers.collect{|kv| "  #{kv.join(': ')}"}.join("\n")
+          end
           return [200, headers, []] if headers
         end
         cors_headers = process_cors(env)
@@ -26,6 +39,13 @@ module Rack
     end
 
     protected
+      def debug(env, message = nil, &block)
+        logger = @logger || env['rack.logger'] || begin
+          @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::DEBUG}
+        end
+        logger.debug(message, &block)
+      end
+
       def all_resources
         @all_resources ||= []
       end
