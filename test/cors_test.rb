@@ -50,6 +50,12 @@ class CorsTest < Test::Unit::TestCase
       preflight_request('http://localhost:3000', '/single_header', :headers => 'X-Domain-Token')
       assert_preflight_success
     end
+
+    should '* origin should allow any origin' do
+      preflight_request('http://locohost:3000', '/public')
+      assert_preflight_success
+      assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
+    end
   end
 
   protected

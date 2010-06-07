@@ -12,6 +12,11 @@ use Rack::Cors do |cfg|
     #     :headers => :any,
     #     :max_age => 0
   end
+
+  cfg.allow do |allow|
+    allow.origins '*'
+    allow.resource '/public'
+  end
 end
 
 map '/' do

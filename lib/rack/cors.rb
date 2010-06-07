@@ -69,20 +69,34 @@ module Rack
 
       class Resources
         def initialize
-          @origins   = []
+          @origins = []
           @resources = []
+          @public_resources = false
         end
 
         def origins(*args)
-          @origins = args.flatten.collect{|n| "http://#{n}" unless n.match(/^https?:\/\//)}
+          @origins = args.flatten.collect do |n|
+            case n
+            when /^https?:\/\// then n
+            when '*'
+              @public_resources = true
+              n
+            else
+              "http://#{n}"
+            end
+          end
         end
 
         def resource(path, opts={})
-          @resources << Resource.new(path, opts)
+          @resources << Resource.new(public_resources?, path, opts)
+        end
+
+        def public_resources?
+          @public_resources
         end
 
         def allow_origin?(source)
-          @origins.include?(source)
+          public_resources? || @origins.include?(source)
         end
 
         def find_resource(path)
@@ -93,12 +107,13 @@ module Rack
       class Resource
         attr_accessor :path, :methods, :headers, :max_age, :credentials, :pattern
 
-        def initialize(path, opts={})
+        def initialize(public_resource, path, opts={})
           self.path        = path
           self.methods     = ensure_enum(opts[:methods]) || [:get]
           self.credentials = opts[:credentials] || true
           self.max_age     = opts[:max_age] || 1728000
           self.pattern     = compile(path)
+          @public_resource = public_resource
 
           self.headers = case opts[:headers]
           when :any then :any
@@ -118,7 +133,7 @@ module Rack
         end
 
         def to_headers(env)
-          h = { 'Access-Control-Allow-Origin' => env['HTTP_ORIGIN'],
+          h = { 'Access-Control-Allow-Origin' => public_resource? ? '*' : env['HTTP_ORIGIN'],
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
             'Access-Control-Max-Age'          => max_age.to_s }
           h['Access-Control-Allow-Credentials'] = 'true' if credentials
@@ -126,6 +141,10 @@ module Rack
         end
 
         protected
+          def public_resource?
+            @public_resource
+          end
+
           def to_preflight_headers(env)
             h = to_headers(env)
             if env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
