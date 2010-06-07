@@ -24,14 +24,16 @@ module Rack
             ].join("\n")
         end
         if env['REQUEST_METHOD'] == 'OPTIONS'
-          headers = process_preflight(env)
-          debug(env) do
-            "Preflight Headers:\n" +
-                headers.collect{|kv| "  #{kv.join(': ')}"}.join("\n")
+          if headers = process_preflight(env)
+            debug(env) do
+              "Preflight Headers:\n" +
+                  headers.collect{|kv| "  #{kv.join(': ')}"}.join("\n")
+            end
+            return [200, headers, []]
           end
-          return [200, headers, []] if headers
+        else
+          cors_headers = process_cors(env)
         end
-        cors_headers = process_cors(env)
       end
       status, headers, body = @app.call env
       headers = headers.merge(cors_headers) if cors_headers
@@ -52,7 +54,7 @@ module Rack
 
       def process_preflight(env)
         resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'])
-        resource.to_preflight_headers(env) if resource
+        resource && resource.process_preflight(env)
       end
 
       def process_cors(env)
@@ -91,36 +93,65 @@ module Rack
       class Resource
         attr_accessor :path, :methods, :headers, :max_age, :credentials, :pattern
 
-        def initialize(path, opts = {})
+        def initialize(path, opts={})
           self.path        = path
           self.methods     = ensure_enum(opts[:methods]) || [:get]
           self.credentials = opts[:credentials] || true
-          self.headers     = ensure_enum(opts[:headers]) || nil
           self.max_age     = opts[:max_age] || 1728000
           self.pattern     = compile(path)
+
+          self.headers = case opts[:headers]
+          when :any then :any
+          when nil then nil
+          else
+            [opts[:headers]].flatten.collect{|h| h.downcase}
+          end
         end
 
         def match?(path)
           pattern =~ path
         end
 
-        def to_headers(env)
-          { 'Access-Control-Allow-Origin'       => env['HTTP_ORIGIN'],
-            'Access-Control-Allow-Methods'      => methods.collect{|m| m.to_s.upcase}.join(', '),
-            'Access-Control-Allow-Credentials'  => credentials.to_s,
-            'Access-Control-Max-Age'            => max_age.to_s }
+        def process_preflight(env)
+          return nil if invalid_method_request?(env) || invalid_headers_request?(env)
+          to_preflight_headers(env)
         end
 
-        def to_preflight_headers(env)
-          h = to_headers(env)
-          h.merge!('Access-Control-Allow-Headers' => headers.join(', ')) if headers
+        def to_headers(env)
+          h = { 'Access-Control-Allow-Origin' => env['HTTP_ORIGIN'],
+            'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
+            'Access-Control-Max-Age'          => max_age.to_s }
+          h['Access-Control-Allow-Credentials'] = 'true' if credentials
           h
         end
 
         protected
+          def to_preflight_headers(env)
+            h = to_headers(env)
+            if env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
+              h.merge!('Access-Control-Allow-Headers' => env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
+            end
+            h
+          end
+
+          def invalid_method_request?(env)
+            request_method = env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
+            request_method.nil? || !methods.include?(request_method.downcase.to_sym)
+          end
+
+          def invalid_headers_request?(env)
+            request_headers = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
+            request_headers && !allow_headers?(request_headers)
+          end
+
+          def allow_headers?(request_headers)
+            return false if headers.nil?
+            headers == :any || !request_headers.detect{|h| !headers.include?(h.downcase)}
+          end
+
           def ensure_enum(v)
             return nil if v.nil?
-            [v] unless v.respond_to?(:join)
+            [v].flatten
           end
 
           def compile(path)
