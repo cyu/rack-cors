@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rack-cors}
-  s.version = "0.1.1"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Calvin Yu"]
-  s.date = %q{2010-06-02}
+  s.date = %q{2010-06-07}
   s.email = %q{csyu77@gmail.com}
   s.extra_rdoc_files = [
     "README.rdoc"
@@ -20,13 +20,18 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/rack/cors.rb",
-     "rack-cors.gemspec"
+     "rack-cors.gemspec",
+     "test/cors_test.rb",
+     "test/test.ru"
   ]
   s.homepage = %q{http://github.com/cyu/rack-cors}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Middleware for enabling Cross-Origin Resource Sharing in Rack apps}
+  s.test_files = [
+    "test/cors_test.rb"
+  ]
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION

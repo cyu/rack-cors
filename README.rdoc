@@ -19,14 +19,18 @@ Install the gem:
 
 You configure Rack::Cors by passing a block to the <tt>use</tt> command:
 
-  use Rack::Cors do |config|
-    config.allow do |allow|
+  use Rack::Cors do |cfg|
+    cfg.allow do |allow|
       allow.origins 'localhost:3000', '127.0.0.1:3000'
 
       allow.resource '/file/list_all/', :headers => 'x-domain-token'
-
       allow.resource '/file/at/*',
           :methods => [:get, :post, :put, :delete],
           :headers => 'x-domain-token'
+    end
+
+    cfg.allow do |allow|
+      allow.origins '*'
+      allow.resource '/public/*', :headers => :any, :methods => :get
     end
   end
