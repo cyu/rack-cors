@@ -43,7 +43,7 @@ module Rack
     protected
       def debug(env, message = nil, &block)
         logger = @logger || env['rack.logger'] || begin
-          @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::DEBUG}
+          @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::INFO}
         end
         logger.debug(message, &block)
       end
