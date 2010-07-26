@@ -167,7 +167,7 @@ module Rack
             return false if headers.nil?
             headers == :any || begin
               request_headers = request_headers.split(', ') if request_headers.kind_of?(String)
-              !request_headers.detect{|h| !headers.include?(h.downcase)}
+              request_headers.all?{|h| headers.include?(h.downcase)}
             end
           end
 
