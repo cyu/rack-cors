@@ -61,6 +61,12 @@ class CorsTest < Test::Unit::TestCase
       assert_preflight_success
       assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
     end
+
+    should 'return a Content-Type' do
+      preflight_request('http://localhost:3000', '/')
+      assert_preflight_success
+      assert_not_nil last_response.headers['Content-Type']
+    end
   end
 
   protected

@@ -129,7 +129,7 @@ module Rack
 
         def process_preflight(env)
           return nil if invalid_method_request?(env) || invalid_headers_request?(env)
-          to_preflight_headers(env)
+          {'Content-Type' => 'text/plain'}.merge(to_preflight_headers(env))
         end
 
         def to_headers(env)
