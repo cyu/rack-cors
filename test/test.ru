@@ -7,6 +7,7 @@ use Rack::Cors do |cfg|
     allow.resource '/get-only', :methods => :get
     allow.resource '/', :headers => :any
     allow.resource '/single_header', :headers => 'x-domain-token'
+    allow.resource '/two_headers', :headers => %w{x-domain-token x-requested-with}
     # allow.resource '/file/at/*',
     #     :methods => [:get, :post, :put, :delete],
     #     :headers => :any,

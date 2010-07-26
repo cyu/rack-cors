@@ -165,7 +165,10 @@ module Rack
 
           def allow_headers?(request_headers)
             return false if headers.nil?
-            headers == :any || !request_headers.detect{|h| !headers.include?(h.downcase)}
+            headers == :any || begin
+              request_headers = request_headers.split(', ') if request_headers.kind_of?(String)
+              !request_headers.detect{|h| !headers.include?(h.downcase)}
+            end
           end
 
           def ensure_enum(v)

@@ -51,6 +51,11 @@ class CorsTest < Test::Unit::TestCase
       assert_preflight_success
     end
 
+    should 'allow multiple headers match' do
+      preflight_request('http://localhost:3000', '/two_headers', :headers => %w{X-Requested-With X-Domain-Token})
+      assert_preflight_success
+    end
+
     should '* origin should allow any origin' do
       preflight_request('http://locohost:3000', '/public')
       assert_preflight_success
