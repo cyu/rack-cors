@@ -52,7 +52,12 @@ class CorsTest < Test::Unit::TestCase
     end
 
     should 'allow multiple headers match' do
-      preflight_request('http://localhost:3000', '/two_headers', :headers => %w{X-Requested-With X-Domain-Token})
+      # Webkit style
+      preflight_request('http://localhost:3000', '/two_headers', :headers => 'X-Requested-With, X-Domain-Token')
+      assert_preflight_success
+
+      # Gecko style
+      preflight_request('http://localhost:3000', '/two_headers', :headers => 'x-requested-with,x-domain-token')
       assert_preflight_success
     end
 
@@ -76,7 +81,7 @@ class CorsTest < Test::Unit::TestCase
         header 'Access-Control-Request-Method', opts[:method] ? opts[:method].to_s.upcase : 'GET'
       end
       if opts[:headers]
-        header 'Access-Control-Request-Headers', [opts[:headers]].flatten.join(', ')
+        header 'Access-Control-Request-Headers', opts[:headers]
       end
       options path
     end
