@@ -13,6 +13,10 @@ http://www.w3.org/TR/access-control/#simple-cross-origin-request-and-actual-r
 Install the gem:
 
   gem install rack-cors
+  
+In your Gemfile:
+
+  gem 'rack-cors', :require => 'rack/cors'
 
 
 == Configuration
