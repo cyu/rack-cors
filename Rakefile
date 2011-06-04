@@ -16,6 +16,7 @@ begin
   Jeweler::Tasks.new do |gemspec|
     gemspec.name = "rack-cors"
     gemspec.summary = "Middleware for enabling Cross-Origin Resource Sharing in Rack apps"
+    gemspec.description = "Middleware that will make Rack-based apps CORS compatible.  Read more here: http://blog.sourcebender.com/2010/06/09/introducin-rack-cors.html.  Fork the project here: http://github.com/cyu/rack-cors"
     gemspec.email = "csyu77@gmail.com"
     gemspec.homepage = "http://github.com/cyu/rack-cors"
     gemspec.authors = ["Calvin Yu"]

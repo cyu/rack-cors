@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Calvin Yu"]
   s.date = %q{2011-06-04}
+  s.description = %q{Middleware that will make Rack-based apps CORS compatible.  Read more here: http://blog.sourcebender.com/2010/06/09/introducin-rack-cors.html.  Fork the project here: http://github.com/cyu/rack-cors}
   s.email = %q{csyu77@gmail.com}
   s.extra_rdoc_files = [
     "README.rdoc"
