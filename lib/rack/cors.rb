@@ -2,15 +2,25 @@ require 'logger'
 
 module Rack
   class Cors
-    def initialize(app, opts={})
+    def initialize(app, opts={}, &block)
       @app = app
       @logger = opts[:logger]
-      yield self if block_given?
+
+      if block.arity == 1
+        block.call(self)
+      else
+        instance_eval(&block)
+      end
     end
 
-    def allow
+    def allow(&block)
       all_resources << (resources = Resources.new)
-      yield resources
+
+      if block.arity == 1
+        block.call(resources)
+      else
+        resources.instance_eval(&block)
+      end
     end
 
     def call(env)
