@@ -25,12 +25,16 @@ You configure Rack::Cors by passing a block to the <tt>use</tt> command:
 
   use Rack::Cors do |cfg|
     cfg.allow do |allow|
-      allow.origins 'localhost:3000', '127.0.0.1:3000'
+      allow.origins 'localhost:3000', '127.0.0.1:3000',
+                    /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/
+                    # regular expressions can be used here
 
       allow.resource '/file/list_all/', :headers => 'x-domain-token'
       allow.resource '/file/at/*',
           :methods => [:get, :post, :put, :delete],
-          :headers => 'x-domain-token'
+          :headers => 'x-domain-token',
+          :expose => ['Some-Custom-Response-Header']
+          # headers to expose
     end
 
     cfg.allow do |allow|
