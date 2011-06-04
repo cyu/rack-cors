@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rack-cors}
-  s.version = "0.2.2"
+  s.version = "0.2.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Calvin Yu"]
@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
      "lib/rack/cors.rb",
      "rack-cors.gemspec",
      "test/cors_test.rb",
+     "test/dsl_test.rb",
      "test/test.ru"
   ]
   s.homepage = %q{http://github.com/cyu/rack-cors}
@@ -30,7 +31,8 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Middleware for enabling Cross-Origin Resource Sharing in Rack apps}
   s.test_files = [
-    "test/cors_test.rb"
+    "test/cors_test.rb",
+     "test/dsl_test.rb"
   ]
 
   if s.respond_to? :specification_version then
