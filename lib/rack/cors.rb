@@ -14,13 +14,9 @@ module Rack
     end
 
     def call(env)
-      if env['HTTP_ORIGIN'] == 'null'
-        env['HTTP_ORIGIN'] = 'file://'
-      end
-      if env['HTTP_X_ORIGIN'] and not env['HTTP_ORIGIN']
-        puts 'ORIGIN header is empty, X-ORIGIN workaround header applied.'
-        env['HTTP_ORIGIN'] = env['HTTP_X_ORIGIN']
-      end
+      env['HTTP_ORIGIN'] = 'file://' if env['HTTP_ORIGIN'] == 'null'
+      env['HTTP_ORIGIN'] ||= env['HTTP_X_ORIGIN']
+
       cors_headers = nil
       if env['HTTP_ORIGIN']
         debug(env) do
@@ -83,17 +79,10 @@ module Rack
 
         def origins(*args)
           @origins = args.flatten.collect do |n|
-            if n.class == Regexp
-              n
-            else
-              case n
-              when /^https?:\/\// then n
-              when '*'
-                @public_resources = true
-                n
-              else
-                "http://#{n}"
-              end
+            case n
+            when Regexp, /^https?:\/\// then n
+            when '*'                    then @public_resources = true; n
+            else                        "http://#{n}"
             end
           end
         end
@@ -107,9 +96,7 @@ module Rack
         end
 
         def allow_origin?(source)
-          result = public_resources? || @origins.include?(source) ||
-              (not (@origins.select {|n| n.class == Regexp && n.match(source)}).empty?)
-          result
+          public_resources? || !!@origins.detect {|origin| origin === source}
         end
 
         def find_resource(path)
@@ -135,11 +122,7 @@ module Rack
             [opts[:headers]].flatten.collect{|h| h.downcase}
           end
 
-          self.expose = case opts[:expose]
-          when nil then nil
-          else
-            [opts[:expose]].flatten
-          end
+          self.expose = opts[:expose] ? [opts[:expose]].flatten : nil
         end
 
         def match?(path)
@@ -155,7 +138,7 @@ module Rack
           x_origin = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
           h = { 'Access-Control-Allow-Origin' => public_resource? ? '*' : env['HTTP_ORIGIN'],
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
-            'Access-Control-Expose-Headers'    => expose.nil? ? '' : expose.join(', '),
+            'Access-Control-Expose-Headers'   => expose.nil? ? '' : expose.join(', '),
             'Access-Control-Max-Age'          => max_age.to_s }
           h['Access-Control-Allow-Credentials'] = 'true' if credentials
           h
