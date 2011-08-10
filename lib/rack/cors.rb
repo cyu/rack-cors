@@ -65,7 +65,10 @@ module Rack
 
         async = true
         status, headers, body = catch :async do
-          @app.call(env).tap { async = false }
+          @app.call(env).tap do
+            # if we got this far, then @app.call completed without throwing.
+            async = false
+          end
         end
 
         if async
