@@ -63,25 +63,20 @@ module Rack
         # completes without throwing, we just add our headers immediately in
         # the normal synchronous fashion.
 
-        async = true
         status, headers, body = catch :async do
-          @app.call(env).tap do
-            # if we got this far, then @app.call completed without throwing.
-            async = false
-          end
+          status, headers, body = @app.call(env)
+          # if we got this far, then @app.call completed without throwing.
+          headers = headers.merge(cors_headers) if cors_headers
+          return [status, headers, body]
         end
 
-        if async
-          original_callback = env['async.callback']
-          env['async.callback'] = proc do |status, headers, body|
-            headers = headers.merge(cors_headers) if cors_headers
-            original_callback.call([status, headers, body])
-          end
-          throw :async
-        else
+        # if we ended up here, must have caught :async (skipping the 'return')
+        original_callback = env['async.callback']
+        env['async.callback'] = proc do |status, headers, body|
           headers = headers.merge(cors_headers) if cors_headers
-          [status, headers, body]
+          original_callback.call([status, headers, body])
         end
+        throw :async
       end
 
       def debug(env, message = nil, &block)
