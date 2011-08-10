@@ -48,12 +48,30 @@ module Rack
           cors_headers = process_cors(env)
         end
       end
-      status, headers, body = @app.call env
-      headers = headers.merge(cors_headers) if cors_headers
-      [status, headers, body]
+      process_request(env, cors_headers)
     end
 
     protected
+      def process_request(env, cors_headers)
+        async = true
+        status, headers, body = catch :async do
+          @app.call(env).tap { async = false }
+        end
+
+        if async
+          original_callback = env['async.callback']
+          env['async.callback'] = proc do |response|
+            status, headers, body = response
+            headers = headers.merge(cors_headers) if cors_headers
+            original_callback.call([status, headers, body])
+          end
+          throw :async
+        else
+          headers = headers.merge(cors_headers) if cors_headers
+          [status, headers, body]
+        end
+      end
+
       def debug(env, message = nil, &block)
         logger = @logger || env['rack.logger'] || begin
           @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::INFO}
