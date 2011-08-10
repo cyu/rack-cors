@@ -53,6 +53,16 @@ module Rack
 
     protected
       def process_request(env, cors_headers)
+        # The thin web server allows apps to signal async request processing by
+        # throwing the symbol :async, then signalling completion later by
+        # invoking env['async.callback'].
+        #
+        # Here we ensure compatibility with that protocol: if @app.call throws
+        # :async, we catch it, wrap async.callback to insert the appropriate
+        # CORS response headers, then rethrow :async up to thin.  If @app.call
+        # completes without throwing, we just add our headers immediately in
+        # the normal synchronous fashion.
+
         async = true
         status, headers, body = catch :async do
           @app.call(env).tap { async = false }
