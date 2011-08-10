@@ -60,8 +60,7 @@ module Rack
 
         if async
           original_callback = env['async.callback']
-          env['async.callback'] = proc do |response|
-            status, headers, body = response
+          env['async.callback'] = proc do |status, headers, body|
             headers = headers.merge(cors_headers) if cors_headers
             original_callback.call([status, headers, body])
           end
