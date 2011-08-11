@@ -72,7 +72,8 @@ module Rack
 
         # if we ended up here, must have caught :async (skipping the 'return')
         original_callback = env['async.callback']
-        env['async.callback'] = proc do |status, headers, body|
+        env['async.callback'] = proc do |response|
+          status, headers, body = response
           headers = headers.merge(cors_headers) if cors_headers
           original_callback.call([status, headers, body])
         end
