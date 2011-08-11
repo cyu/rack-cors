@@ -63,7 +63,7 @@ module Rack
         # completes without throwing, we just add our headers immediately in
         # the normal synchronous fashion.
 
-        status, headers, body = catch :async do
+        catch :async do
           status, headers, body = @app.call(env)
           # if we got this far, then @app.call completed without throwing.
           headers = headers.merge(cors_headers) if cors_headers
