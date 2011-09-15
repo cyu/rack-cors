@@ -146,7 +146,7 @@ module Rack
 
         def to_headers(env)
           x_origin = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
-          h = { 'Access-Control-Allow-Origin' => public_resource? ? '*' : env['HTTP_ORIGIN'],
+          h = { 'Access-Control-Allow-Origin' => credentials ? env['HTTP_ORIGIN'] : public_resource? ? '*' : env['HTTP_ORIGIN'],
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
             'Access-Control-Expose-Headers'   => expose.nil? ? '' : expose.join(', '),
             'Access-Control-Max-Age'          => max_age.to_s }
