@@ -19,6 +19,7 @@ use Rack::Cors do
   allow do
     origins '*'
     resource '/public'
+    resource '/public_without_credentials', :credentials => false
   end
 end
 

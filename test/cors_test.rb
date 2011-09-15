@@ -87,6 +87,12 @@ class CorsTest < Test::Unit::TestCase
     should '* origin should allow any origin' do
       preflight_request('http://locohost:3000', '/public')
       assert_cors_success
+      assert_equal 'http://locohost:3000', last_response.headers['Access-Control-Allow-Origin']
+    end
+
+    should '* origin should allow any origin, and set * if no credentials required' do
+      preflight_request('http://locohost:3000', '/public_without_credentials')
+      assert_cors_success
       assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
     end
 
