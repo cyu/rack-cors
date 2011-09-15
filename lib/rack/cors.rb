@@ -120,7 +120,7 @@ module Rack
         def initialize(public_resource, path, opts={})
           self.path        = path
           self.methods     = ensure_enum(opts[:methods]) || [:get]
-          self.credentials = opts[:credentials] || true
+          self.credentials = opts[:credentials].nil? ? true : opts[:credentials]
           self.max_age     = opts[:max_age] || 1728000
           self.pattern     = compile(path)
           @public_resource = public_resource
