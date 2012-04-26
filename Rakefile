@@ -24,6 +24,7 @@ begin
     gemspec.authors = ["Calvin Yu"]
     gemspec.add_dependency 'rack'
     gemspec.add_development_dependency 'rake'
+    gemspec.add_development_dependency 'rack-test'
     gemspec.files.exclude 'Gemfile'
   end
   Jeweler::GemcutterTasks.new
