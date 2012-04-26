@@ -21,6 +21,7 @@ begin
     gemspec.homepage = "http://github.com/cyu/rack-cors"
     gemspec.authors = ["Calvin Yu"]
     gemspec.add_dependency 'rack'
+    gemspec.add_development_dependency 'rake'
     gemspec.files.exclude 'Gemfile'
   end
   Jeweler::GemcutterTasks.new
