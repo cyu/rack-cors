@@ -11,21 +11,21 @@ Gem::Specification.new do |s|
   s.authors = ["Calvin Yu"]
   s.date = "2012-04-26"
   s.description = "Middleware that will make Rack-based apps CORS compatible.  Read more here: http://blog.sourcebender.com/2010/06/09/introducin-rack-cors.html.  Fork the project here: http://github.com/cyu/rack-cors"
-  s.email = "csyu77@gmail.com"
+  s.email = "me@sourcebender.com"
   s.extra_rdoc_files = [
+    "LICENSE.txt",
     "README.rdoc"
   ]
   s.files = [
+    "Gemfile",
     "README.rdoc",
     "Rakefile",
     "VERSION",
     "lib/rack/cors.rb",
-    "rack-cors.gemspec",
-    "test/cors_test.rb",
-    "test/dsl_test.rb",
-    "test/test.ru"
+    "rack-cors.gemspec"
   ]
   s.homepage = "http://github.com/cyu/rack-cors"
+  s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.23"
   s.summary = "Middleware for enabling Cross-Origin Resource Sharing in Rack apps"
@@ -34,24 +34,27 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<rack-cors>, [">= 0"])
-      s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_runtime_dependency(%q<rack>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
+      s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<rack-test>, [">= 0"])
+      s.add_development_dependency(%q<bundler>, ["~> 1.1.0"])
+      s.add_development_dependency(%q<jeweler>, ["~> 1.8.3"])
     else
-      s.add_dependency(%q<rack-cors>, [">= 0"])
-      s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<rack>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
+      s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<rack-test>, [">= 0"])
+      s.add_dependency(%q<bundler>, ["~> 1.1.0"])
+      s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
     end
   else
-    s.add_dependency(%q<rack-cors>, [">= 0"])
-    s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<rack>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
+    s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<rack-test>, [">= 0"])
+    s.add_dependency(%q<bundler>, ["~> 1.1.0"])
+    s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
   end
 end
 
