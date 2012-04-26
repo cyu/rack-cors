@@ -18,11 +18,15 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "Gemfile",
+    "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
     "VERSION",
     "lib/rack/cors.rb",
-    "rack-cors.gemspec"
+    "rack-cors.gemspec",
+    "test/unit/cors_test.rb",
+    "test/unit/dsl_test.rb",
+    "test/unit/test.ru"
   ]
   s.homepage = "http://github.com/cyu/rack-cors"
   s.licenses = ["MIT"]
