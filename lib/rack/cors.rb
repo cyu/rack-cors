@@ -48,12 +48,38 @@ module Rack
           cors_headers = process_cors(env)
         end
       end
-      status, headers, body = @app.call env
-      headers = headers.merge(cors_headers) if cors_headers
-      [status, headers, body]
+      process_request(env, cors_headers)
     end
 
     protected
+      def process_request(env, cors_headers)
+        # The thin web server allows apps to signal async request processing by
+        # throwing the symbol :async, then signalling completion later by
+        # invoking env['async.callback'].
+        #
+        # Here we ensure compatibility with that protocol: if @app.call throws
+        # :async, we catch it, wrap async.callback to insert the appropriate
+        # CORS response headers, then rethrow :async up to thin.  If @app.call
+        # completes without throwing, we just add our headers immediately in
+        # the normal synchronous fashion.
+
+        catch :async do
+          status, headers, body = @app.call(env)
+          # if we got this far, then @app.call completed without throwing.
+          headers = headers.merge(cors_headers) if cors_headers
+          return [status, headers, body]
+        end
+
+        # if we ended up here, must have caught :async (skipping the 'return')
+        original_callback = env['async.callback']
+        env['async.callback'] = proc do |response|
+          status, headers, body = response
+          headers = headers.merge(cors_headers) if cors_headers
+          original_callback.call([status, headers, body])
+        end
+        throw :async
+      end
+
       def debug(env, message = nil, &block)
         logger = @logger || env['rack.logger'] || begin
           @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::INFO}
