@@ -35,17 +35,23 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rack-cors>, [">= 0"])
+      s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_runtime_dependency(%q<rack>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
+      s.add_development_dependency(%q<rack-test>, [">= 0"])
     else
       s.add_dependency(%q<rack-cors>, [">= 0"])
+      s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<rack>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
+      s.add_dependency(%q<rack-test>, [">= 0"])
     end
   else
     s.add_dependency(%q<rack-cors>, [">= 0"])
+    s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<rack>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
+    s.add_dependency(%q<rack-test>, [">= 0"])
   end
 end
 
