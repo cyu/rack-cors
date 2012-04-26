@@ -8,6 +8,8 @@ Rake::TestTask.new(:test) do |t|
   t.warning = true
 end
 
+task :default => :test
+
 # ==================================================
 # JEWELER TASKS
 # ==================================================
