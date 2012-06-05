@@ -43,6 +43,20 @@ class CorsTest < Test::Unit::TestCase
     assert_equal 'expose-test-1, expose-test-2', last_response.headers['Access-Control-Expose-Headers']
   end
 
+  should 'add Vary header if Access-Control-Allow-Origin header was added and if it is specific' do
+    cors_request '/', :origin => "http://192.168.0.3:8080"
+    assert_cors_success
+    assert_equal 'http://192.168.0.3:8080', last_response.headers['Access-Control-Allow-Origin']
+    assert_not_nil last_response.headers['Vary'], 'missing Vary header'
+  end
+
+  should 'not add Vary header if Access-Control-Allow-Origin header was added and if it is generic (*)' do
+    cors_request '/public_without_credentials', :origin => "http://192.168.1.3:8080"
+    assert_cors_success
+    assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
+    assert_nil last_response.headers['Vary'], 'no expecting Vary header'
+  end
+
   context 'preflight requests' do
     should 'fail if origin is invalid' do
       preflight_request('http://allyourdataarebelongtous.com', '/')

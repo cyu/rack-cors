@@ -49,7 +49,13 @@ module Rack
         end
       end
       status, headers, body = @app.call env
-      headers = headers.merge(cors_headers) if cors_headers
+      if cors_headers
+        headers = headers.merge(cors_headers)
+        unless headers['Access-Control-Allow-Origin'] == '*'
+          vary = headers['Vary']
+          headers['Vary'] = ((vary ? vary.split(/,\s*/) : []) + ['Origin']).uniq.join(', ')
+        end
+      end
       [status, headers, body]
     end
 
