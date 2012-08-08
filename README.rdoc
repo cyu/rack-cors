@@ -13,7 +13,7 @@ http://www.w3.org/TR/access-control/#simple-cross-origin-request-and-actual-r
 Install the gem:
 
   gem install rack-cors
-  
+
 In your Gemfile:
 
   gem 'rack-cors', :require => 'rack/cors'
@@ -31,7 +31,7 @@ You configure Rack::Cors by passing a block to the <tt>use</tt> command:
 
       resource '/file/list_all/', :headers => 'x-domain-token'
       resource '/file/at/*',
-          :methods => [:get, :post, :put, :delete],
+          :methods => [:get, :post, :put, :delete, :options],
           :headers => 'x-domain-token',
           :expose => ['Some-Custom-Response-Header']
           # headers to expose
@@ -42,3 +42,22 @@ You configure Rack::Cors by passing a block to the <tt>use</tt> command:
       resource '/public/*', :headers => :any, :methods => :get
     end
   end
+
+Put your code in "config/application.rb" on your rails application. For example, this will allow
+from any origins on any resource of your application, methods :get, :post and :options.
+
+  module YourApp
+    class Application < Rails::Application
+
+    # ...
+
+    config.middleware.use Rack::Cors do
+      allow do
+        origins '*'
+        resource '*', :headers => :any, :methods => [:get, :post, :options]
+      end
+    end
+  end
+
+See http://guides.rubyonrails.org/rails_on_rack.html for more details on rack middlewares or
+http://railscasts.com/episodes/151-rack-middleware.
