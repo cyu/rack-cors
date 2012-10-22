@@ -29,4 +29,15 @@ class DSLTest < Test::Unit::TestCase
     assert_equal 1, resources.length
     assert resources.first.allow_origin?('http://localhost:3000')
   end
+
+  should 'support "file://" origin' do
+    cors = Rack::Cors.new(Proc.new {}) do
+      allow do
+        origins 'file://'
+        resource '/', :headers => :any
+      end
+    end
+    resources = cors.send :all_resources
+    assert resources.first.allow_origin?('file://')
+  end
 end
