@@ -110,6 +110,12 @@ class CorsTest < Test::Unit::TestCase
       assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
     end
 
+    should '"null" origin, allowed as "file://", returned as "null" in header' do
+      preflight_request('null', '/')
+      assert_cors_success
+      assert_equal 'null', last_response.headers['Access-Control-Allow-Origin']
+    end
+
     should 'return a Content-Type' do
       preflight_request('http://localhost:3000', '/')
       assert_cors_success
