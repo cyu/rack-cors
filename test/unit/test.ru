@@ -2,7 +2,7 @@ require 'rack/cors'
 
 use Rack::Cors do
   allow do
-    origins 'localhost:3000', '127.0.0.1:3000', /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/
+    origins 'localhost:3000', '127.0.0.1:3000', /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/, 'file://'
 
     resource '/get-only', :methods => :get
     resource '/', :headers => :any
