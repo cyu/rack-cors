@@ -97,6 +97,7 @@ module Rack
           @origins = args.flatten.collect do |n|
             case n
             when Regexp, /^https?:\/\// then n
+            when 'file://'              then n
             when '*'                    then @public_resources = true; n
             else                        "http://#{n}"
             end
@@ -152,7 +153,8 @@ module Rack
 
         def to_headers(env)
           x_origin = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
-          h = { 'Access-Control-Allow-Origin' => credentials ? env['HTTP_ORIGIN'] : public_resource? ? '*' : env['HTTP_ORIGIN'],
+          h = {
+            'Access-Control-Allow-Origin'     => origin_for_response_header(env['HTTP_ORIGIN']),
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
             'Access-Control-Expose-Headers'   => expose.nil? ? '' : expose.join(', '),
             'Access-Control-Max-Age'          => max_age.to_s }
@@ -163,6 +165,11 @@ module Rack
         protected
           def public_resource?
             @public_resource
+          end
+
+          def origin_for_response_header(origin)
+            return '*' if public_resource? && !credentials
+            origin == 'file://' ? 'null' : origin
           end
 
           def to_preflight_headers(env)
