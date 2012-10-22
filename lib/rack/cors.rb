@@ -97,6 +97,7 @@ module Rack
           @origins = args.flatten.collect do |n|
             case n
             when Regexp, /^https?:\/\// then n
+            when 'file://'              then n
             when '*'                    then @public_resources = true; n
             else                        "http://#{n}"
             end
