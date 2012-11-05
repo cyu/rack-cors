@@ -93,7 +93,7 @@ module Rack
           @public_resources = false
         end
 
-        def origins(*args)
+        def origins(*args,&blk)
           @origins = args.flatten.collect do |n|
             case n
             when Regexp, /^https?:\/\// then n
@@ -101,6 +101,7 @@ module Rack
             else                        "http://#{n}"
             end
           end
+          @origins.push(blk) if blk
         end
 
         def resource(path, opts={})
@@ -112,7 +113,14 @@ module Rack
         end
 
         def allow_origin?(source)
-          public_resources? || !!@origins.detect {|origin| origin === source}
+          return true if public_resources?
+          return !! @origins.detect do |origin|
+            if origin.is_a?(Proc)
+              origin.call(source)
+            else
+              origin === source
+            end
+          end
         end
 
         def find_resource(path)

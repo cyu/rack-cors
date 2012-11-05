@@ -26,6 +26,10 @@ class CorsTest < Test::Unit::TestCase
     cors_request :origin => 'http://192.168.0.1:1234'
   end
 
+  should 'support proc origins configuration' do
+    cors_request '/proc-origin', :origin => 'http://10.10.10.10:3000'
+  end
+
   should 'support alternative X-Origin header' do
     header 'X-Origin', 'http://localhost:3000'
     get '/'
@@ -35,7 +39,6 @@ class CorsTest < Test::Unit::TestCase
   should 'support expose header configuration' do
     cors_request '/expose_single_header'
     assert_equal 'expose-test', last_response.headers['Access-Control-Expose-Headers']
-
   end
 
   should 'support expose multiple header configuration' do
