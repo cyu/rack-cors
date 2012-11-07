@@ -72,17 +72,17 @@ module Rack
       end
 
       def process_preflight(env)
-        resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'])
+        resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
         resource && resource.process_preflight(env)
       end
 
       def process_cors(env)
-        resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'])
+        resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
         resource.to_headers(env) if resource
       end
 
-      def find_resource(origin, path)
-        allowed = all_resources.detect {|r| r.allow_origin?(origin)}
+      def find_resource(origin, path, env)
+        allowed = all_resources.detect {|r| r.allow_origin?(origin,env)}
         allowed ? allowed.find_resource(path) : nil
       end
 
@@ -93,7 +93,7 @@ module Rack
           @public_resources = false
         end
 
-        def origins(*args)
+        def origins(*args,&blk)
           @origins = args.flatten.collect do |n|
             case n
             when Regexp, /^https?:\/\// then n
@@ -101,6 +101,7 @@ module Rack
             else                        "http://#{n}"
             end
           end
+          @origins.push(blk) if blk
         end
 
         def resource(path, opts={})
@@ -111,8 +112,15 @@ module Rack
           @public_resources
         end
 
-        def allow_origin?(source)
-          public_resources? || !!@origins.detect {|origin| origin === source}
+        def allow_origin?(source,env = {})
+          return true if public_resources?
+          return !! @origins.detect do |origin|
+            if origin.is_a?(Proc)
+              origin.call(source,env)
+            else
+              origin === source
+            end
+          end
         end
 
         def find_resource(path)
