@@ -17,7 +17,7 @@ use Rack::Cors do
   end
 
   allow do
-    origins do |source|
+    origins do |source,env|
       source.end_with?("10.10.10.10:3000")
     end
     resource '/proc-origin'
