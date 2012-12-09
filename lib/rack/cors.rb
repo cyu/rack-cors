@@ -7,10 +7,12 @@ module Rack
       @logger = opts[:logger]
       @debug_mode = !!opts[:debug]
 
-      if block.arity == 1
-        block.call(self)
-      else
-        instance_eval(&block)
+      if block_given?
+        if block.arity == 1
+          block.call(self)
+        else
+          instance_eval(&block)
+        end
       end
     end
 
