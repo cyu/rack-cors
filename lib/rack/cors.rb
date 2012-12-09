@@ -5,6 +5,7 @@ module Rack
     def initialize(app, opts={}, &block)
       @app = app
       @logger = opts[:logger]
+      @debug_mode = !!opts[:debug]
 
       if block.arity == 1
         block.call(self)
@@ -61,10 +62,12 @@ module Rack
 
     protected
       def debug(env, message = nil, &block)
-        logger = @logger || env['rack.logger'] || begin
-          @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::INFO}
+        if @debug_mode
+          logger = @logger || env['rack.logger'] || begin
+            @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::INFO}
+          end
+          logger.debug(message, &block)
         end
-        logger.debug(message, &block)
       end
 
       def all_resources

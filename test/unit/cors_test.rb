@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'rack/test'
 require 'shoulda'
+require 'mocha'
+require 'rack/cors'
 
 Rack::Test::Session.class_eval do
   def options(uri, params = {}, env = {}, &block)
@@ -58,6 +60,28 @@ class CorsTest < Test::Unit::TestCase
     assert_cors_success
     assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
     assert_nil last_response.headers['Vary'], 'no expecting Vary header'
+  end
+
+  should 'not log debug messages if debug option is false' do
+    app = mock
+    app.stubs(:call).returns(200, {}, [''])
+
+    logger = mock
+    logger.expects(:debug).never
+
+    cors = Rack::Cors.new(app, :debug => false, :logger => logger) {}
+    cors.send(:debug, {}, 'testing')
+  end
+
+  should 'log debug messages if debug option is true' do
+    app = mock
+    app.stubs(:call).returns(200, {}, [''])
+
+    logger = mock
+    logger.expects(:debug)
+
+    cors = Rack::Cors.new(app, :debug => true, :logger => logger) {}
+    cors.send(:debug, {}, 'testing')
   end
 
   context 'preflight requests' do
