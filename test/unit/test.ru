@@ -17,6 +17,13 @@ use Rack::Cors do
   end
 
   allow do
+    origins do |source,env|
+      source.end_with?("10.10.10.10:3000")
+    end
+    resource '/proc-origin'
+  end
+
+  allow do
     origins '*'
     resource '/public'
     resource '/public_without_credentials', :credentials => false
