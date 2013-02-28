@@ -28,6 +28,12 @@ use Rack::Cors do
     resource '/public'
     resource '/public_without_credentials', :credentials => false
   end
+
+  allow do
+    fallback true
+    origins 'localhost:3000'
+    resource '/fallback', :methods => :get
+  end
 end
 
 map '/' do

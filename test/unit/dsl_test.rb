@@ -54,4 +54,16 @@ class DSLTest < Test::Unit::TestCase
     resources = cors.send :all_resources
     assert resources.first.allow_origin?('file://')
   end
+
+  should 'support setting of fallback' do
+    cors = Rack::Cors.new(Proc.new {}) do |cfg|
+      cfg.allow do |allow|
+        allow.origins 'localhost:3000'
+        allow.fallback true
+        allow.resource '/get-only', :methods => :get
+      end
+    end
+    resources = cors.send :all_resources
+    assert_equal true, resources.first.instance_variable_get(:@fallback)
+  end
 end
