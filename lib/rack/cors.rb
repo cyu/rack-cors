@@ -104,9 +104,9 @@ module Rack
             when Regexp, /^https?:\/\// then n
             when 'file://'              then n
             when '*'                    then @public_resources = true; n
-            else                        "http://#{n}"
+            else                        ["http://#{n}", "https://#{n}"]
             end
-          end
+          end.flatten
           @origins.push(blk) if blk
         end
 
