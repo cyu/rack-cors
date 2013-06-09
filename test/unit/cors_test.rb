@@ -1,8 +1,10 @@
+require 'test/unit'
 require 'rubygems'
 require 'rack/test'
 require 'shoulda'
 require 'mocha'
 require 'rack/cors'
+require 'debugger'
 
 Rack::Test::Session.class_eval do
   def options(uri, params = {}, env = {}, &block)
@@ -57,6 +59,13 @@ class CorsTest < Test::Unit::TestCase
 
   should 'not add Vary header if Access-Control-Allow-Origin header was added and if it is generic (*)' do
     cors_request '/public_without_credentials', :origin => "http://192.168.1.3:8080"
+    assert_cors_success
+    assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
+    assert_nil last_response.headers['Vary'], 'no expecting Vary header'
+  end
+
+  should 'not add Vary header if Access-Control-Allow-Origin header was added and if it is not in the whitelist and fallback is set to true' do
+    cors_request '/fallback', :origin => "http://192.168.1.3:8080"
     assert_cors_success
     assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
     assert_nil last_response.headers['Vary'], 'no expecting Vary header'

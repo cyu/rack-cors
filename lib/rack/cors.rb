@@ -87,8 +87,14 @@ module Rack
       end
 
       def find_resource(origin, path, env)
-        allowed = all_resources.detect {|r| r.allow_origin?(origin,env)}
-        allowed ? allowed.find_resource(path) : nil
+        all_resources.each do |resources|
+          allowed = resources.allow_origin?(origin, env)
+          next unless allowed
+          if resource = resources.find_resource(path)
+            return resource
+          end
+        end
+        return nil
       end
 
       class Resources
@@ -96,6 +102,7 @@ module Rack
           @origins = []
           @resources = []
           @public_resources = false
+          @fallback = false
         end
 
         def origins(*args,&blk)
@@ -111,22 +118,26 @@ module Rack
         end
 
         def resource(path, opts={})
-          @resources << Resource.new(public_resources?, path, opts)
+          @resources << Resource.new(public_resources?, @fallback, @origins, path, opts)
         end
 
         def public_resources?
           @public_resources
         end
 
+        def fallback(*args)
+          @fallback = args.first
+        end
+
         def allow_origin?(source,env = {})
           return true if public_resources?
-          return !! @origins.detect do |origin|
+          return !! @origins.detect { |origin|
             if origin.is_a?(Proc)
               origin.call(source,env)
             else
               origin === source
             end
-          end
+          } || @fallback
         end
 
         def find_resource(path)
@@ -137,13 +148,15 @@ module Rack
       class Resource
         attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern
 
-        def initialize(public_resource, path, opts={})
+        def initialize(public_resource, fallback, origins, path, opts={})
           self.path        = path
           self.methods     = ensure_enum(opts[:methods]) || [:get]
           self.credentials = opts[:credentials].nil? ? true : opts[:credentials]
           self.max_age     = opts[:max_age] || 1728000
           self.pattern     = compile(path)
           @public_resource = public_resource
+          @fallback        = fallback
+          @origins         = origins
 
           self.headers = case opts[:headers]
           when :any then :any
@@ -182,6 +195,8 @@ module Rack
 
           def origin_for_response_header(origin)
             return '*' if public_resource? && !credentials
+            matched = @origins.detect {|o| o === origin }
+            return "*" if @fallback && !matched
             origin == 'file://' ? 'null' : origin
           end
 
