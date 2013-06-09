@@ -1,5 +1,6 @@
 require 'rack/cors'
 
+#use Rack::Cors, :debug => true, :logger => ::Logger.new(STDOUT) do
 use Rack::Cors do
   allow do
     origins 'localhost:3000', '127.0.0.1:3000', /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/, 'file://'
@@ -27,6 +28,16 @@ use Rack::Cors do
     origins '*'
     resource '/public'
     resource '/public_without_credentials', :credentials => false
+  end
+
+  allow do
+    origins 'mucho-grande.com'
+    resource '/multi-allow-config', :max_age => 600
+  end
+
+  allow do
+    origins '*'
+    resource '/multi-allow-config', :max_age => 300, :credentials => false
   end
 end
 

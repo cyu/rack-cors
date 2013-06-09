@@ -62,6 +62,18 @@ class CorsTest < Test::Unit::TestCase
     assert_nil last_response.headers['Vary'], 'no expecting Vary header'
   end
 
+  should 'support multi allow configurations for the same resource' do
+    cors_request '/multi-allow-config', :origin => "http://mucho-grande.com"
+    assert_cors_success
+    assert_equal 'http://mucho-grande.com', last_response.headers['Access-Control-Allow-Origin']
+    assert_equal 'Origin', last_response.headers['Vary'], 'expecting Vary header'
+
+    cors_request '/multi-allow-config', :origin => "http://192.168.1.3:8080"
+    assert_cors_success
+    assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
+    assert_nil last_response.headers['Vary'], 'no expecting Vary header'
+  end
+
   should 'not log debug messages if debug option is false' do
     app = mock
     app.stubs(:call).returns(200, {}, [''])

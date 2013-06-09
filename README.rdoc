@@ -33,7 +33,8 @@ You configure Rack::Cors by passing a block to the <tt>use</tt> command:
       resource '/file/at/*',
           :methods => [:get, :post, :put, :delete, :options],
           :headers => 'x-domain-token',
-          :expose => ['Some-Custom-Response-Header']
+          :expose  => ['Some-Custom-Response-Header'],
+          :max_age => 600
           # headers to expose
     end
 

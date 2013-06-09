@@ -54,6 +54,8 @@ module Rack
       status, headers, body = @app.call env
       if cors_headers
         headers = headers.merge(cors_headers)
+
+        # http://www.w3.org/TR/cors/#resource-implementation
         unless headers['Access-Control-Allow-Origin'] == '*'
           vary = headers['Vary']
           headers['Vary'] = ((vary ? vary.split(/,\s*/) : []) + ['Origin']).uniq.join(', ')
@@ -87,8 +89,12 @@ module Rack
       end
 
       def find_resource(origin, path, env)
-        allowed = all_resources.detect {|r| r.allow_origin?(origin,env)}
-        allowed ? allowed.find_resource(path) : nil
+        all_resources.each do |r|
+          if r.allow_origin?(origin, env) and found = r.find_resource(path)
+            return found
+          end
+        end
+        nil
       end
 
       class Resources
