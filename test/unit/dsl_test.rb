@@ -1,7 +1,7 @@
 require 'rubygems'
+require 'test/unit'
 require 'rack/cors'
 require 'shoulda'
-
 
 class DSLTest < Test::Unit::TestCase
   should 'support explicit config object dsl mode' do
