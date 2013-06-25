@@ -92,7 +92,7 @@ module Rack
 
       def process_options_cors(env)
         resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'], env)
-        resource.to_options_headers(env) if resource
+        resource && resource.process_options(env)
       end
 
       def find_resource(origin, path, env)
@@ -175,6 +175,10 @@ module Rack
         def process_preflight(env)
           return nil if invalid_method_request?(env) || invalid_headers_request?(env)
           {'Content-Type' => 'text/plain'}.merge(to_preflight_headers(env))
+        end
+
+        def process_options(env)
+          to_options_headers(env) if methods.include?(env['REQUEST_METHOD'].downcase.to_sym)
         end
 
         def to_options_headers(env)

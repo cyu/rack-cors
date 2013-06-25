@@ -26,7 +26,7 @@ class CorsTest < Test::Unit::TestCase
   should('support simple cors request') { cors_request }
 
   should 'support OPTIONS cors request' do
-    cors_request :method => :options
+    cors_request '/options', :method => :options
   end
 
   should 'support regex origins configuration' do
