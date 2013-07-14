@@ -25,6 +25,10 @@ class CorsTest < Test::Unit::TestCase
 
   should('support simple cors request') { cors_request }
 
+  should 'support OPTIONS cors request' do
+    cors_request '/options', :method => :options
+  end
+
   should 'support regex origins configuration' do
     cors_request :origin => 'http://192.168.0.1:1234'
   end
@@ -167,11 +171,11 @@ class CorsTest < Test::Unit::TestCase
     def cors_request(*args)
       path = args.first.is_a?(String) ? args.first : '/'
 
-      opts = args.last.is_a?(Hash) ? args.last : {:origin => 'http://localhost:3000'}
-      origin = opts[:origin]
+      opts = { :method => :get, :origin => 'http://localhost:3000' }
+      opts.merge! args.last if args.last.is_a?(Hash)
 
-      header 'Origin', origin
-      get path
+      header 'Origin', opts[:origin]
+      current_session.__send__ opts[:method], path
       assert_cors_success
     end
 

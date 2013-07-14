@@ -7,6 +7,7 @@ use Rack::Cors do
 
     resource '/get-only', :methods => :get
     resource '/', :headers => :any
+    resource '/options', :methods => :options
     resource '/single_header', :headers => 'x-domain-token'
     resource '/two_headers', :headers => %w{x-domain-token x-requested-with}
     resource '/expose_single_header', :expose => 'expose-test'
