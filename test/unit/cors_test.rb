@@ -1,7 +1,8 @@
 require 'rubygems'
+require 'test/unit'
 require 'rack/test'
 require 'shoulda'
-require 'mocha'
+require 'mocha/setup'
 require 'rack/cors'
 
 Rack::Test::Session.class_eval do
