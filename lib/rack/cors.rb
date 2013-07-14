@@ -39,7 +39,7 @@ module Rack
             "  Access-Control-Request-Headers: #{env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}"
             ].join("\n")
         end
-        if env['REQUEST_METHOD'] == 'OPTIONS'
+        if env['REQUEST_METHOD'] == 'OPTIONS' and env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
           if headers = process_preflight(env)
             debug(env) do
               "Preflight Headers:\n" +
