@@ -59,9 +59,15 @@ module Rails3
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
 
-    config.middleware.insert_before "ActionDispatch::Static", "Rack::Cors" do
+    config.middleware.insert_before "ActionDispatch::Static", "Rack::Cors", :debug => true, :logger => Rails.logger do
       allow do
         origins '*'
+
+        resource '/cors',
+          :headers => :any,
+          :methods => [:post],
+          :credentials => true
+
         resource '*',
           :headers => :any,
           :methods => [:get, :post, :delete, :put, :options],
