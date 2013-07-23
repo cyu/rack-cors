@@ -17,9 +17,16 @@
       });
     });
     return it('should allow post resource', function(done) {
-      return $.post("http://" + CORS_SERVER + "/cors", function(data, status, xhr) {
-        expect($.trim(data)).to.eql("OK!");
-        return done();
+      return $.ajax({
+        type: 'POST',
+        url: "http://" + CORS_SERVER + "/cors",
+        beforeSend: function(xhr) {
+          return xhr.setRequestHeader('X-Requested-With', 'XMLHTTPRequest');
+        },
+        success: function(data, status, xhr) {
+          expect($.trim(data)).to.eql("OK!");
+          return done();
+        }
       });
     });
   });

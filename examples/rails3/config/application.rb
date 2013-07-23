@@ -66,7 +66,8 @@ module Rails3
         resource '/cors',
           :headers => :any,
           :methods => [:post],
-          :credentials => true
+          :credentials => true,
+          :max_age => 0
 
         resource '*',
           :headers => :any,

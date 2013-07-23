@@ -13,7 +13,11 @@ describe 'CORS', ->
       done()
 
   it 'should allow post resource', (done) ->
-    $.post "http://#{CORS_SERVER}/cors", (data, status, xhr) ->
-      expect($.trim(data)).to.eql("OK!")
-      done()
+    $.ajax
+      type: 'POST'
+      url: "http://#{CORS_SERVER}/cors"
+      beforeSend: (xhr) -> xhr.setRequestHeader('X-Requested-With', 'XMLHTTPRequest')
+      success:(data, status, xhr) ->
+        expect($.trim(data)).to.eql("OK!")
+        done()
 
