@@ -17,7 +17,7 @@ module Rack
     end
 
     def allow(&block)
-      all_resources << (resources = Resources.new)
+      all_resources << (resources = Resources.new(self))
 
       if block.arity == 1
         block.call(resources)
@@ -64,22 +64,27 @@ module Rack
       [status, headers, body]
     end
 
-    protected
-      def debug(env, message = nil, &block)
-        if @debug_mode
-          logger = @logger || env['rack.logger'] || begin
-            @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::INFO}
-          end
-          logger.debug(message, &block)
+    def debug(env, message = nil, &block)
+      if @debug_mode
+        logger = @logger || env['rack.logger'] || begin
+          @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::DEBUG}
         end
+        logger.debug(message, &block)
       end
+    end
 
+    protected
       def all_resources
         @all_resources ||= []
       end
 
       def process_preflight(env)
         resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
+        if not resource
+          debug(env) do
+            "Didn't find a resource for #{env['HTTP_ORIGIN']} at #{env['PATH_INFO']}"
+          end
+        end
         resource && resource.process_preflight(env)
       end
 
@@ -90,18 +95,29 @@ module Rack
 
       def find_resource(origin, path, env)
         all_resources.each do |r|
+          debug(env) do
+            "Checking #{r} for match against #{origin} at #{path}"
+          end
           if r.allow_origin?(origin, env) and found = r.find_resource(path)
             return found
           end
+        end
+        debug(env) do
+          "No match found"
         end
         nil
       end
 
       class Resources
-        def initialize
+        def initialize(cors)
+          @cors = cors
           @origins = []
           @resources = []
           @public_resources = false
+        end
+
+        def to_s
+          "Resorces #{@origins} #{@resources}"
         end
 
         def origins(*args,&blk)
@@ -117,7 +133,7 @@ module Rack
         end
 
         def resource(path, opts={})
-          @resources << Resource.new(public_resources?, path, opts)
+          @resources << Resource.new(@cors, public_resources?, path, opts)
         end
 
         def public_resources?
@@ -143,7 +159,8 @@ module Rack
       class Resource
         attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern
 
-        def initialize(public_resource, path, opts={})
+        def initialize(cors, public_resource, path, opts={})
+          @cors            = cors
           self.path        = path
           self.methods     = ensure_enum(opts[:methods]) || [:get]
           self.credentials = opts[:credentials].nil? ? true : opts[:credentials]
@@ -161,12 +178,27 @@ module Rack
           self.expose = opts[:expose] ? [opts[:expose]].flatten : nil
         end
 
+        def inspect
+          "Resource #{self.path} #{self.methods}"
+        end
+
         def match?(path)
           pattern =~ path
         end
 
         def process_preflight(env)
-          return nil if invalid_method_request?(env) || invalid_headers_request?(env)
+          if invalid_method_request?(env)
+            @cors.debug(env) do
+              "Invalid method request"
+            end
+            return nil
+          end
+          if invalid_headers_request?(env)
+            @cors.debug(env) do
+              "Invalid headers request"
+            end
+            return nil
+          end
           {'Content-Type' => 'text/plain'}.merge(to_preflight_headers(env))
         end
 
