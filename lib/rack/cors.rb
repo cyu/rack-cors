@@ -68,7 +68,7 @@ module Rack
       def debug(env, message = nil, &block)
         if @debug_mode
           logger = @logger || env['rack.logger'] || begin
-            @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::INFO}
+            @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::DEBUG}
           end
           logger.debug(message, &block)
         end
