@@ -7,7 +7,7 @@ http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-res
 
 Or for all the gory details, you can read the spec here:
 
-http://www.w3.org/TR/access-control/#simple-cross-origin-request-and-actual-r
+http://www.w3.org/TR/cors/
 
 
 Install the gem:
