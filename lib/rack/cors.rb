@@ -4,8 +4,15 @@ module Rack
   class Cors
     def initialize(app, opts={}, &block)
       @app = app
-      @logger = opts[:logger]
       @debug_mode = !!opts[:debug]
+
+      if logger = opts[:logger]
+        if logger.respond_to? :call
+          @logger_proc = opts[:logger]
+        else
+          @logger = logger
+        end
+      end
 
       if block_given?
         if block.arity == 1
@@ -66,11 +73,23 @@ module Rack
 
     protected
       def debug(env, message = nil, &block)
-        if @debug_mode
-          logger = @logger || env['rack.logger'] || begin
-            @logger = ::Logger.new(STDOUT).tap {|logger| logger.level = ::Logger::Severity::DEBUG}
-          end
-          logger.debug(message, &block)
+        (@logger || select_logger(env)).debug(message, &block) if @debug_mode
+      end
+
+      def select_logger(env)
+        @logger = if @logger_proc
+          logger_proc = @logger_proc
+          @logger_proc = nil
+          logger_proc.call
+
+        elsif defined?(Rails) && Rails.logger
+          Rails.logger
+
+        elsif env['rack.logger']
+          env['rack.logger']
+
+        else
+          ::Logger.new(STDOUT).tap { |logger| logger.level = ::Logger::Severity::DEBUG }
         end
       end
 

@@ -79,26 +79,69 @@ class CorsTest < Test::Unit::TestCase
     assert_nil last_response.headers['Vary'], 'no expecting Vary header'
   end
 
-  should 'not log debug messages if debug option is false' do
-    app = mock
-    app.stubs(:call).returns(200, {}, [''])
+  context 'logging' do
+    should 'not log debug messages if debug option is false' do
+      app = mock
+      app.stubs(:call).returns(200, {}, [''])
 
-    logger = mock
-    logger.expects(:debug).never
+      logger = mock
+      logger.expects(:debug).never
 
-    cors = Rack::Cors.new(app, :debug => false, :logger => logger) {}
-    cors.send(:debug, {}, 'testing')
-  end
+      cors = Rack::Cors.new(app, :debug => false, :logger => logger) {}
+      cors.send(:debug, {}, 'testing')
+    end
 
-  should 'log debug messages if debug option is true' do
-    app = mock
-    app.stubs(:call).returns(200, {}, [''])
+    should 'log debug messages if debug option is true' do
+      app = mock
+      app.stubs(:call).returns(200, {}, [''])
 
-    logger = mock
-    logger.expects(:debug)
+      logger = mock
+      logger.expects(:debug)
 
-    cors = Rack::Cors.new(app, :debug => true, :logger => logger) {}
-    cors.send(:debug, {}, 'testing')
+      cors = Rack::Cors.new(app, :debug => true, :logger => logger) {}
+      cors.send(:debug, {}, 'testing')
+    end
+
+    should 'use rack.logger if available' do
+      app = mock
+      app.stubs(:call).returns(200, {}, [''])
+
+      logger = mock
+      logger.expects(:debug)
+
+      cors = Rack::Cors.new(app, :debug => true) {}
+      cors.call({'rack.logger' => logger, 'HTTP_ORIGIN' => 'test.com'})
+    end
+
+    should 'use logger proc' do
+      app = mock
+      app.stubs(:call).returns(200, {}, [''])
+
+      logger = mock
+      logger.expects(:debug)
+
+      cors = Rack::Cors.new(app, :debug => true, :logger => proc { logger }) {}
+      cors.call({'HTTP_ORIGIN' => 'test.com'})
+    end
+
+    context '' do
+      def teardown
+        ::Rails.logger = nil if defined?(::Rails)
+      end
+
+      should 'use Rails.logger if available' do
+        app = mock
+        app.stubs(:call).returns(200, {}, [''])
+
+        logger = mock
+        logger.expects(:debug)
+
+        ::Rails = OpenStruct.new(:logger => logger)
+
+        cors = Rack::Cors.new(app, :debug => true) {}
+        cors.call({'HTTP_ORIGIN' => 'test.com'})
+      end
+    end
   end
 
   context 'preflight requests' do
