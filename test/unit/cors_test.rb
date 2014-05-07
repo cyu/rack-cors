@@ -1,7 +1,6 @@
 require 'rubygems'
-require 'test/unit'
+require 'minitest/autorun'
 require 'rack/test'
-require 'shoulda'
 require 'mocha/setup'
 require 'rack/cors'
 
@@ -16,71 +15,69 @@ Rack::Test::Methods.class_eval do
   def_delegator :current_session, :options
 end
 
-class CorsTest < Test::Unit::TestCase
+describe Rack::Cors do
   include Rack::Test::Methods
 
   def app
     eval "Rack::Builder.new {( " + File.read(File.dirname(__FILE__) + '/test.ru') + "\n )}"
   end
 
-  should('support simple cors request') { cors_request }
+  it 'should support simple cors request' do
+    cors_request
+  end
 
-  should 'support OPTIONS cors request' do
+  it 'should support OPTIONS cors request' do
     cors_request '/options', :method => :options
   end
 
-  should 'support regex origins configuration' do
+  it 'should support regex origins configuration' do
     cors_request :origin => 'http://192.168.0.1:1234'
   end
 
-  should 'support proc origins configuration' do
+  it 'should support proc origins configuration' do
     cors_request '/proc-origin', :origin => 'http://10.10.10.10:3000'
   end
 
-  should 'support alternative X-Origin header' do
+  it 'should support alternative X-Origin header' do
     header 'X-Origin', 'http://localhost:3000'
     get '/'
-    assert_cors_success
+    should_render_cors_success
   end
 
-  should 'support expose header configuration' do
+  it 'should support expose header configuration' do
     cors_request '/expose_single_header'
-    assert_equal 'expose-test', last_response.headers['Access-Control-Expose-Headers']
+    last_response.headers['Access-Control-Expose-Headers'].must_equal 'expose-test'
   end
 
-  should 'support expose multiple header configuration' do
+  it 'should support expose multiple header configuration' do
     cors_request '/expose_multiple_headers'
-    assert_equal 'expose-test-1, expose-test-2', last_response.headers['Access-Control-Expose-Headers']
+    last_response.headers['Access-Control-Expose-Headers'].must_equal 'expose-test-1, expose-test-2'
   end
 
-  should 'add Vary header if Access-Control-Allow-Origin header was added and if it is specific' do
+  it 'should add Vary header if Access-Control-Allow-Origin header was added and if it is specific' do
     cors_request '/', :origin => "http://192.168.0.3:8080"
-    assert_cors_success
-    assert_equal 'http://192.168.0.3:8080', last_response.headers['Access-Control-Allow-Origin']
-    assert_not_nil last_response.headers['Vary'], 'missing Vary header'
+    last_response.headers['Access-Control-Allow-Origin'].must_equal 'http://192.168.0.3:8080'
+    last_response.headers['Vary'].wont_be_nil
   end
 
-  should 'not add Vary header if Access-Control-Allow-Origin header was added and if it is generic (*)' do
+  it 'should not add Vary header if Access-Control-Allow-Origin header was added and if it is generic (*)' do
     cors_request '/public_without_credentials', :origin => "http://192.168.1.3:8080"
-    assert_cors_success
-    assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
-    assert_nil last_response.headers['Vary'], 'no expecting Vary header'
+    last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+    last_response.headers['Vary'].must_be_nil
   end
 
-  should 'support multi allow configurations for the same resource' do
+  it 'should support multi allow configurations for the same resource' do
     cors_request '/multi-allow-config', :origin => "http://mucho-grande.com"
-    assert_cors_success
-    assert_equal 'http://mucho-grande.com', last_response.headers['Access-Control-Allow-Origin']
-    assert_equal 'Origin', last_response.headers['Vary'], 'expecting Vary header'
+    last_response.headers['Access-Control-Allow-Origin'].must_equal 'http://mucho-grande.com'
+    last_response.headers['Vary'].must_equal 'Origin'
 
     cors_request '/multi-allow-config', :origin => "http://192.168.1.3:8080"
-    assert_cors_success
-    assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
-    assert_nil last_response.headers['Vary'], 'no expecting Vary header'
+    last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+    last_response.headers['Vary'].must_be_nil
   end
 
-  context 'logging' do
-    should 'not log debug messages if debug option is false' do
+  describe 'logging' do
+    it 'should not log debug messages if debug option is false' do
       app = mock
       app.stubs(:call).returns(200, {}, [''])
 
@@ -91,7 +88,7 @@ class CorsTest < Test::Unit::TestCase
       cors.send(:debug, {}, 'testing')
     end
 
-    should 'log debug messages if debug option is true' do
+    it 'should log debug messages if debug option is true' do
       app = mock
       app.stubs(:call).returns(200, {}, [''])
 
@@ -102,7 +99,7 @@ class CorsTest < Test::Unit::TestCase
       cors.send(:debug, {}, 'testing')
     end
 
-    should 'use rack.logger if available' do
+    it 'should use rack.logger if available' do
       app = mock
       app.stubs(:call).returns(200, {}, [''])
 
@@ -113,7 +110,7 @@ class CorsTest < Test::Unit::TestCase
       cors.call({'rack.logger' => logger, 'HTTP_ORIGIN' => 'test.com'})
     end
 
-    should 'use logger proc' do
+    it 'should use logger proc' do
       app = mock
       app.stubs(:call).returns(200, {}, [''])
 
@@ -124,12 +121,12 @@ class CorsTest < Test::Unit::TestCase
       cors.call({'HTTP_ORIGIN' => 'test.com'})
     end
 
-    context '' do
-      def teardown
+    describe 'with Rails setup' do
+      def after
         ::Rails.logger = nil if defined?(::Rails)
       end
 
-      should 'use Rails.logger if available' do
+      it 'should use Rails.logger if available' do
         app = mock
         app.stubs(:call).returns(200, {}, [''])
 
@@ -144,64 +141,64 @@ class CorsTest < Test::Unit::TestCase
     end
   end
 
-  context 'preflight requests' do
-    should 'fail if origin is invalid' do
+  describe 'preflight requests' do
+    it 'should fail if origin is invalid' do
       preflight_request('http://allyourdataarebelongtous.com', '/')
-      assert_cors_failure
+      should_render_cors_failure
     end
 
-    should 'fail if Access-Control-Request-Method is not allowed' do
+    it 'should fail if Access-Control-Request-Method is not allowed' do
       preflight_request('http://localhost:3000', '/get-only', :method => :post)
-      assert_cors_failure
+      should_render_cors_failure
     end
 
-    should 'fail if header is not allowed' do
+    it 'should fail if header is not allowed' do
       preflight_request('http://localhost:3000', '/single_header', :headers => 'Fooey')
-      assert_cors_failure
+      should_render_cors_failure
     end
 
-    should 'allow any header if headers = :any' do
+    it 'should allow any header if headers = :any' do
       preflight_request('http://localhost:3000', '/', :headers => 'Fooey')
-      assert_cors_success
+      should_render_cors_success
     end
 
-    should 'allow header case insensitive match' do
+    it 'should allow header case insensitive match' do
       preflight_request('http://localhost:3000', '/single_header', :headers => 'X-Domain-Token')
-      assert_cors_success
+      should_render_cors_success
     end
 
-    should 'allow multiple headers match' do
+    it 'should allow multiple headers match' do
       # Webkit style
       preflight_request('http://localhost:3000', '/two_headers', :headers => 'X-Requested-With, X-Domain-Token')
-      assert_cors_success
+      should_render_cors_success
 
       # Gecko style
       preflight_request('http://localhost:3000', '/two_headers', :headers => 'x-requested-with,x-domain-token')
-      assert_cors_success
+      should_render_cors_success
     end
 
-    should '* origin should allow any origin' do
+    it 'should * origin should allow any origin' do
       preflight_request('http://locohost:3000', '/public')
-      assert_cors_success
-      assert_equal 'http://locohost:3000', last_response.headers['Access-Control-Allow-Origin']
+      should_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].must_equal 'http://locohost:3000'
     end
 
-    should '* origin should allow any origin, and set * if no credentials required' do
+    it 'should * origin should allow any origin, and set * if no credentials required' do
       preflight_request('http://locohost:3000', '/public_without_credentials')
-      assert_cors_success
-      assert_equal '*', last_response.headers['Access-Control-Allow-Origin']
+      should_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     end
 
-    should '"null" origin, allowed as "file://", returned as "null" in header' do
+    it 'should "null" origin, allowed as "file://", returned as "null" in header' do
       preflight_request('null', '/')
-      assert_cors_success
-      assert_equal 'null', last_response.headers['Access-Control-Allow-Origin']
+      should_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].must_equal 'null'
     end
 
-    should 'return a Content-Type' do
+    it 'should return a Content-Type' do
       preflight_request('http://localhost:3000', '/')
-      assert_cors_success
-      assert_not_nil last_response.headers['Content-Type']
+      should_render_cors_success
+      last_response.headers['Content-Type'].wont_be_nil
     end
   end
 
@@ -214,7 +211,7 @@ class CorsTest < Test::Unit::TestCase
 
       header 'Origin', opts[:origin]
       current_session.__send__ opts[:method], path
-      assert_cors_success
+      should_render_cors_success
     end
 
     def preflight_request(origin, path, opts = {})
@@ -228,11 +225,11 @@ class CorsTest < Test::Unit::TestCase
       options path
     end
 
-    def assert_cors_success
-      assert_not_nil last_response.headers['Access-Control-Allow-Origin'], 'missing Access-Control-Allow-Origin header'
+    def should_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].wont_be_nil
     end
 
-    def assert_cors_failure
-      assert_nil last_response.headers['Access-Control-Allow-Origin'], 'no expecting Access-Control-Allow-Origin header'
+    def should_render_cors_failure
+      last_response.headers['Access-Control-Allow-Origin'].must_be_nil
     end
 end

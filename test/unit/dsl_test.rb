@@ -1,11 +1,10 @@
 require 'rubygems'
-require 'test/unit'
+require 'minitest/autorun'
 require 'rack/cors'
-require 'shoulda'
 
 
-class DSLTest < Test::Unit::TestCase
-  should 'support explicit config object dsl mode' do
+describe Rack::Cors, 'DSL' do
+  it 'should support explicit config object dsl mode' do
     cors = Rack::Cors.new(Proc.new {}) do |cfg|
       cfg.allow do |allow|
         allow.origins 'localhost:3000', '127.0.0.1:3000' do |source,env|
@@ -17,15 +16,15 @@ class DSLTest < Test::Unit::TestCase
       end
     end
     resources = cors.send :all_resources
-    assert_equal 1, resources.length
-    assert resources.first.allow_origin?('http://localhost:3000')
 
-    assert  resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "test-agent" })
-    assert !resources.first.allow_origin?('http://10.10.10.10:3001',{"USER_AGENT" => "test-agent" })
-    assert !resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "other-agent"})
+    resources.length.must_equal 1
+    resources.first.allow_origin?('http://localhost:3000').must_equal true
+    resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "test-agent" }).must_equal true
+    resources.first.allow_origin?('http://10.10.10.10:3001',{"USER_AGENT" => "test-agent" }).wont_equal true
+    resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "other-agent"}).wont_equal true
   end
 
-  should 'support implicit config object dsl mode' do
+  it 'should support implicit config object dsl mode' do
     cors = Rack::Cors.new(Proc.new {}) do
       allow do
         origins 'localhost:3000', '127.0.0.1:3000' do |source,env|
@@ -37,15 +36,15 @@ class DSLTest < Test::Unit::TestCase
       end
     end
     resources = cors.send :all_resources
-    assert_equal 1, resources.length
-    assert resources.first.allow_origin?('http://localhost:3000')
 
-    assert  resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "test-agent" })
-    assert !resources.first.allow_origin?('http://10.10.10.10:3001',{"USER_AGENT" => "test-agent" })
-    assert !resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "other-agent"})
+    resources.length.must_equal 1
+    resources.first.allow_origin?('http://localhost:3000').must_equal true
+    resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "test-agent" }).must_equal true
+    resources.first.allow_origin?('http://10.10.10.10:3001',{"USER_AGENT" => "test-agent" }).wont_equal true
+    resources.first.allow_origin?('http://10.10.10.10:3000',{"USER_AGENT" => "other-agent"}).wont_equal true
   end
 
-  should 'support "file://" origin' do
+  it 'should support "file://" origin' do
     cors = Rack::Cors.new(Proc.new {}) do
       allow do
         origins 'file://'
@@ -53,6 +52,7 @@ class DSLTest < Test::Unit::TestCase
       end
     end
     resources = cors.send :all_resources
-    assert resources.first.allow_origin?('file://')
+
+    resources.first.allow_origin?('file://').must_equal true
   end
 end
