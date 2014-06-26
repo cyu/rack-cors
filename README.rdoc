@@ -44,8 +44,8 @@ You configure Rack::Cors by passing a block to the <tt>use</tt> command:
     end
   end
 
-Put your code in "config/application.rb" on your rails application. For example, this will allow
-from any origins on any resource of your application, methods :get, :post and :options.
+Put something like the code below in "config/application.rb" of your Rails application. For example, this will allow
+GET, POST or OPTIONS requests from any origin on any resource.
 
   module YourApp
     class Application < Rails::Application
