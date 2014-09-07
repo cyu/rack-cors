@@ -55,8 +55,7 @@ GEM
     multi_json (1.10.1)
     polyglot (0.3.5)
     rack (1.5.2)
-    rack-cors (0.2.8)
-      rack
+    rack-cors (0.3.0)
     rack-test (0.6.2)
       rack (>= 1.0)
     rails (4.1.5)
@@ -118,7 +117,7 @@ DEPENDENCIES
   coffee-rails (~> 4.0.0)
   jbuilder (~> 2.0)
   jquery-rails
-  rack-cors
+  rack-cors (= 0.3.0)
   rails (= 4.1.5)
   sass-rails (~> 4.0.3)
   sdoc (~> 0.4.0)

@@ -7,8 +7,23 @@ describe 'CORS', ->
       expect(data).to.eql('Hello world')
       done()
 
+  it 'should allow PUT access to dynamic resource', (done) ->
+    $.ajax("http://#{CORS_SERVER}/", type: 'PUT').done (data, textStatus, jqXHR) ->
+      expect(data).to.eql('Hello world')
+      done()
+
   it 'should allow HEAD access to dynamic resource', (done) ->
     $.ajax("http://#{CORS_SERVER}/", type: 'HEAD').done (data, textStatus, jqXHR) ->
+      expect(jqXHR.status).to.eql(200)
+      done()
+
+  it 'should allow DELETE access to dynamic resource', (done) ->
+    $.ajax("http://#{CORS_SERVER}/", type: 'DELETE').done (data, textStatus, jqXHR) ->
+      expect(data).to.eql('Hello world')
+      done()
+
+  it 'should allow OPTIONS access to dynamic resource', (done) ->
+    $.ajax("http://#{CORS_SERVER}/", type: 'OPTIONS').done (data, textStatus, jqXHR) ->
       expect(jqXHR.status).to.eql(200)
       done()
 

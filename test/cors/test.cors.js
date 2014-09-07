@@ -11,9 +11,33 @@
         return done();
       });
     });
+    it('should allow PUT access to dynamic resource', function(done) {
+      return $.ajax("http://" + CORS_SERVER + "/", {
+        type: 'PUT'
+      }).done(function(data, textStatus, jqXHR) {
+        expect(data).to.eql('Hello world');
+        return done();
+      });
+    });
     it('should allow HEAD access to dynamic resource', function(done) {
       return $.ajax("http://" + CORS_SERVER + "/", {
         type: 'HEAD'
+      }).done(function(data, textStatus, jqXHR) {
+        expect(jqXHR.status).to.eql(200);
+        return done();
+      });
+    });
+    it('should allow DELETE access to dynamic resource', function(done) {
+      return $.ajax("http://" + CORS_SERVER + "/", {
+        type: 'DELETE'
+      }).done(function(data, textStatus, jqXHR) {
+        expect(data).to.eql('Hello world');
+        return done();
+      });
+    });
+    it('should allow OPTIONS access to dynamic resource', function(done) {
+      return $.ajax("http://" + CORS_SERVER + "/", {
+        type: 'OPTIONS'
       }).done(function(data, textStatus, jqXHR) {
         expect(jqXHR.status).to.eql(200);
         return done();

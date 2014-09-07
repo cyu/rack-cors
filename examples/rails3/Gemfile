@@ -37,4 +37,5 @@ gem 'unicorn'
 # To use debugger
 #gem 'debugger'
 
-gem 'rack-cors'
+gem 'rack-cors', '0.3.0'
+#gem 'rack-cors', :path => '../..'
