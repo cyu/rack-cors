@@ -71,7 +71,7 @@ module Rails3
 
         resource '*',
           :headers => :any,
-          :methods => [:get, :post, :delete, :put, :options],
+          :methods => [:get, :post, :delete, :put, :options, :head],
           :max_age => 0
       end
     end

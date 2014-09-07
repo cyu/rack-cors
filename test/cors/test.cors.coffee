@@ -7,6 +7,11 @@ describe 'CORS', ->
       expect(data).to.eql('Hello world')
       done()
 
+  it 'should allow HEAD access to dynamic resource', (done) ->
+    $.ajax("http://#{CORS_SERVER}/", type: 'HEAD').done (data, textStatus, jqXHR) ->
+      expect(jqXHR.status).to.eql(200)
+      done()
+
   it 'should allow access to static resource', (done) ->
     $.get "http://#{CORS_SERVER}/static.txt", (data, status, xhr) ->
       expect($.trim(data)).to.eql("hello world")
@@ -20,4 +25,3 @@ describe 'CORS', ->
       success:(data, status, xhr) ->
         expect($.trim(data)).to.eql("OK!")
         done()
-
