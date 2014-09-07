@@ -2,6 +2,8 @@ require 'logger'
 
 module Rack
   class Cors
+    HEADER_KEY = 'X-Rack-Cors'
+
     def initialize(app, opts={}, &block)
       @app = app
       @debug_mode = !!opts[:debug]
@@ -23,6 +25,10 @@ module Rack
       end
     end
 
+    def debug?
+      @debug_mode
+    end
+
     def allow(&block)
       all_resources << (resources = Resources.new)
 
@@ -37,7 +43,7 @@ module Rack
       env['HTTP_ORIGIN'] = 'file://' if env['HTTP_ORIGIN'] == 'null'
       env['HTTP_ORIGIN'] ||= env['HTTP_X_ORIGIN']
 
-      cors_headers = nil
+      add_headers = nil
       if env['HTTP_ORIGIN']
         debug(env) do
           [ 'Incoming Headers:',
@@ -55,12 +61,16 @@ module Rack
             return [200, headers, []]
           end
         else
-          cors_headers = process_cors(env)
+          add_headers = process_cors(env)
         end
+      else debug?
+        add_headers = { HEADER_KEY => "miss; no-origin-header" }
       end
+
       status, headers, body = @app.call env
-      if cors_headers
-        headers = headers.merge(cors_headers)
+
+      if add_headers
+        headers = headers.merge(add_headers)
 
         # http://www.w3.org/TR/cors/#resource-implementation
         unless headers['Access-Control-Allow-Origin'] == '*'
@@ -68,12 +78,13 @@ module Rack
           headers['Vary'] = ((vary ? vary.split(/,\s*/) : []) + ['Origin']).uniq.join(', ')
         end
       end
+
       [status, headers, body]
     end
 
     protected
       def debug(env, message = nil, &block)
-        (@logger || select_logger(env)).debug(message, &block) if @debug_mode
+        (@logger || select_logger(env)).debug(message, &block) if debug?
       end
 
       def select_logger(env)
@@ -98,22 +109,37 @@ module Rack
       end
 
       def process_preflight(env)
-        resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
-        resource && resource.process_preflight(env)
+        resource, error = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
+        if resource
+          preflight = resource.process_preflight(env)
+          preflight.merge!(HEADER_KEY => 'preflight-hit') if debug?
+          preflight
+
+        else debug?
+          { HEADER_KEY => ['preflight-miss', error].compact.join('; ') }
+        end
       end
 
       def process_cors(env)
-        resource = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
-        resource.to_headers(env) if resource
+        resource, error = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
+        if resource
+          cors = resource.to_headers(env)
+          cors.merge!(HEADER_KEY => 'hit') if debug?
+          cors
+
+        else debug?
+          { HEADER_KEY => ['miss', error].compact.join('; ') }
+        end
       end
 
       def find_resource(origin, path, env)
-        all_resources.each do |r|
-          if r.allow_origin?(origin, env) and found = r.find_resource(path)
-            return found
-          end
-        end
-        nil
+        match = all_resources.detect { |r| r.allow_origin?(origin, env) }
+        return [nil, 'no-origin-match'] unless match
+
+        found = match.find_resource(path)
+        return [nil, 'no-path-match'] unless found
+
+        [found, nil]
       end
 
       class Resources
