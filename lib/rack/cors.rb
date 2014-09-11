@@ -63,7 +63,7 @@ module Rack
         else
           add_headers = process_cors(env)
         end
-      else debug?
+      elif debug?
         add_headers = { HEADER_KEY => "miss; no-origin-header" }
       end
 
@@ -115,7 +115,7 @@ module Rack
           preflight.merge!(HEADER_KEY => 'preflight-hit') if debug?
           preflight
 
-        else debug?
+        elif debug?
           { HEADER_KEY => ['preflight-miss', error].compact.join('; ') }
         end
       end
@@ -127,7 +127,7 @@ module Rack
           cors.merge!(HEADER_KEY => 'hit') if debug?
           cors
 
-        else debug?
+        elif debug?
           { HEADER_KEY => ['miss', error].compact.join('; ') }
         end
       end
