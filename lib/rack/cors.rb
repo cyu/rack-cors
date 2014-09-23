@@ -40,7 +40,6 @@ module Rack
     end
 
     def call(env)
-      env['HTTP_ORIGIN'] = 'file://' if env['HTTP_ORIGIN'] == 'null'
       env['HTTP_ORIGIN'] ||= env['HTTP_X_ORIGIN']
 
       add_headers = nil
@@ -171,11 +170,14 @@ module Rack
 
         def allow_origin?(source,env = {})
           return true if public_resources?
+
+          effective_source = (source == 'null' ? 'file://' : source)
+
           return !! @origins.detect do |origin|
             if origin.is_a?(Proc)
               origin.call(source,env)
             else
-              origin === source
+              origin === effective_source
             end
           end
         end
@@ -233,7 +235,7 @@ module Rack
 
           def origin_for_response_header(origin)
             return '*' if public_resource? && !credentials
-            origin == 'file://' ? 'null' : origin
+            origin
           end
 
           def to_preflight_headers(env)
