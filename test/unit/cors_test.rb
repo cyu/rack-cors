@@ -195,6 +195,12 @@ describe Rack::Cors do
       last_response.headers['Access-Control-Allow-Origin'].must_equal 'null'
     end
 
+    it 'should return "file://" as header with "file://" as origin' do
+      preflight_request('file://', '/')
+      should_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].must_equal 'file://'
+    end
+
     it 'should return a Content-Type' do
       preflight_request('http://localhost:3000', '/')
       should_render_cors_success
