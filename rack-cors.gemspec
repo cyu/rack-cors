@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Rack::Cors::VERSION
   spec.authors       = ["Calvin Yu"]
   spec.email         = ["me@sourcebender.com"]
-  spec.description   = %q{Middleware that will make Rack-based apps CORS compatible.  Read more here: http://blog.sourcebender.com/2010/06/09/introducin-rack-cors.html.  Fork the project here: http://github.com/cyu/rack-cors}
+  spec.description   = %q{Middleware that will make Rack-based apps CORS compatible.  Read more here: http://blog.sourcebender.com/2010/06/09/introducin-rack-cors.html.  Fork the project here: https://github.com/cyu/rack-cors}
   spec.summary       = %q{Middleware for enabling Cross-Origin Resource Sharing in Rack apps}
-  spec.homepage      = "http://github.com/cyu/rack-cors"
+  spec.homepage      = "https://github.com/cyu/rack-cors"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/).reject { |f| f == '.gitignore' or f =~ /^examples/ }
