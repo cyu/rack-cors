@@ -132,13 +132,17 @@ module Rack
       end
 
       def find_resource(origin, path, env)
-        match = all_resources.detect { |r| r.allow_origin?(origin, env) }
-        return [nil, 'no-origin-match'] unless match
+        origin_matched = false
+        all_resources.each do |r|
+          if r.allow_origin?(origin, env)
+            origin_matched = true
+            if found = r.find_resource(path)
+              return [found, nil]
+            end
+          end
+        end
 
-        found = match.find_resource(path)
-        return [nil, 'no-path-match'] unless found
-
-        [found, nil]
+        [nil, origin_matched ? 'no-path-match' : 'no-origin-match']
       end
 
       class Resources
