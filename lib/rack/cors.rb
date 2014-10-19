@@ -2,7 +2,7 @@ require 'logger'
 
 module Rack
   class Cors
-    HEADER_KEY = 'X-Rack-Cors'
+    HEADER_KEY = 'X-Rack-CORS'
 
     def initialize(app, opts={}, &block)
       @app = app
