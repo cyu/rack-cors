@@ -3,6 +3,7 @@ require 'minitest/autorun'
 require 'rack/test'
 require 'mocha/setup'
 require 'rack/cors'
+require 'ostruct'
 
 Rack::Test::Session.class_eval do
   def options(uri, params = {}, env = {}, &block)
@@ -101,10 +102,10 @@ describe Rack::Cors do
 
     it 'should use rack.logger if available' do
       app = mock
-      app.stubs(:call).returns(200, {}, [''])
+      app.stubs(:call).returns([200, {}, ['']])
 
       logger = mock
-      logger.expects(:debug)
+      logger.expects(:debug).at_least_once
 
       cors = Rack::Cors.new(app, :debug => true) {}
       cors.call({'rack.logger' => logger, 'HTTP_ORIGIN' => 'test.com'})
@@ -112,7 +113,7 @@ describe Rack::Cors do
 
     it 'should use logger proc' do
       app = mock
-      app.stubs(:call).returns(200, {}, [''])
+      app.stubs(:call).returns([200, {}, ['']])
 
       logger = mock
       logger.expects(:debug)
@@ -128,7 +129,7 @@ describe Rack::Cors do
 
       it 'should use Rails.logger if available' do
         app = mock
-        app.stubs(:call).returns(200, {}, [''])
+        app.stubs(:call).returns([200, {}, ['']])
 
         logger = mock
         logger.expects(:debug)
