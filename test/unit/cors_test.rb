@@ -123,7 +123,7 @@ describe Rack::Cors do
     end
 
     describe 'with Rails setup' do
-      def after
+      after do
         ::Rails.logger = nil if defined?(::Rails)
       end
 
