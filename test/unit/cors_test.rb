@@ -19,8 +19,12 @@ end
 describe Rack::Cors do
   include Rack::Test::Methods
 
-  def app
-    eval "Rack::Builder.new {( " + File.read(File.dirname(__FILE__) + '/test.ru') + "\n )}"
+  def load_app(name)
+    eval "Rack::Builder.new {( " + File.read(File.dirname(__FILE__) + "/#{name}.ru") + "\n )}"
+  end
+
+  let(:app) do
+    load_app('test')
   end
 
   it 'should support simple cors request' do
@@ -206,6 +210,16 @@ describe Rack::Cors do
       preflight_request('http://localhost:3000', '/')
       should_render_cors_success
       last_response.headers['Content-Type'].wont_be_nil
+    end
+  end
+
+  describe "with non HTTP config" do
+    let(:app) do
+      load_app("non_http")
+    end
+
+    it 'should support non http/https origins' do
+      cors_request '/public', origin: 'content://com.company.app'
     end
   end
 

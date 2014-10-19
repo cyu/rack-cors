@@ -1,0 +1,15 @@
+# Change Log
+All notable changes to this project will be documented in this file.
+
+## 0.3.0 - 2014-10-19
+### Added
+- Added support for defining a logger with a Proc
+- Return a X-Rack-CORS header when in debug mode detailing how
+Rack::Cors processed a request
+- Added support for non HTTP/HTTPS origins when just a domain is
+is specified
+
+### Changed
+- Changed the log level of the fallback logger to DEBUG
+- Print warning when attempting to use :any as an allowed method
+- Treat incoming `Origin: null` headers as file://

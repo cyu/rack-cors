@@ -152,13 +152,14 @@ module Rack
           @public_resources = false
         end
 
-        def origins(*args,&blk)
+        def origins(*args, &blk)
           @origins = args.flatten.collect do |n|
             case n
-            when Regexp, /^https?:\/\// then n
-            when 'file://'              then n
-            when '*'                    then @public_resources = true; n
-            else                        ["http://#{n}", "https://#{n}"]
+            when Regexp,
+                 /^https?:\/\//,
+                 'file://'        then n
+            when '*'              then @public_resources = true; n
+            else                  Regexp.compile("^[a-z][a-z0-9.+-]*:\\\/\\\/#{Regexp.quote(n)}")
             end
           end.flatten
           @origins.push(blk) if blk
