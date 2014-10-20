@@ -19,19 +19,35 @@ end
 describe Rack::Cors do
   include Rack::Test::Methods
 
+  attr_accessor :cors_result
+
   def load_app(name)
-    eval "Rack::Builder.new {( " + File.read(File.dirname(__FILE__) + "/#{name}.ru") + "\n )}"
+    test = self
+    Rack::Builder.new do
+      eval File.read(File.dirname(__FILE__) + "/#{name}.ru")
+      map('/') do
+        run proc { |env|
+          test.cors_result = env[Rack::Cors::ENV_KEY]
+          [200, {'Content-Type' => 'text/html'}, ['success']]
+        }
+      end
+    end
   end
 
-  let(:app) do
-    load_app('test')
-  end
+  let(:app) { load_app('test') }
 
-  it 'should support simple cors request' do
+  it 'should support simple CORS request' do
     cors_request
+    cors_result.must_be :hit
   end
 
-  it 'should support OPTIONS cors request' do
+  it "should not return CORS headers if Origin header isn't present" do
+    get '/'
+    should_render_cors_failure
+    cors_result.wont_be :hit
+  end
+
+  it 'should support OPTIONS CORS request' do
     cors_request '/options', :method => :options
   end
 
@@ -79,6 +95,11 @@ describe Rack::Cors do
     cors_request '/multi-allow-config', :origin => "http://192.168.1.3:8080"
     last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     last_response.headers['Vary'].must_be_nil
+  end
+
+  it "should not return CORS headers on OPTIONS request if Access-Control-Allow-Origin is not present" do
+    options '/get-only'
+    last_response.headers['Access-Control-Allow-Origin'].must_be_nil
   end
 
   describe 'logging' do
@@ -150,6 +171,8 @@ describe Rack::Cors do
     it 'should fail if origin is invalid' do
       preflight_request('http://allyourdataarebelongtous.com', '/')
       should_render_cors_failure
+      cors_result.wont_be :hit
+      cors_result.must_be :preflight
     end
 
     it 'should fail if Access-Control-Request-Method is not allowed' do
@@ -214,9 +237,7 @@ describe Rack::Cors do
   end
 
   describe "with non HTTP config" do
-    let(:app) do
-      load_app("non_http")
-    end
+    let(:app) { load_app("non_http") }
 
     it 'should support non http/https origins' do
       cors_request '/public', origin: 'content://com.company.app'
@@ -231,7 +252,7 @@ describe Rack::Cors do
       opts.merge! args.last if args.last.is_a?(Hash)
 
       header 'Origin', opts[:origin]
-      current_session.__send__ opts[:method], path
+      current_session.__send__ opts[:method], path, {}, test: self
       should_render_cors_success
     end
 

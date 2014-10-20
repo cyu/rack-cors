@@ -2,7 +2,10 @@ require 'logger'
 
 module Rack
   class Cors
-    HEADER_KEY = 'X-Rack-CORS'
+    ENV_KEY    = 'X_RACK_CORS'.freeze
+
+    ORIGIN_HEADER_KEY     = 'HTTP_ORIGIN'.freeze
+    PATH_INFO_HEADER_KEY  = 'PATH_INFO'.freeze
 
     def initialize(app, opts={}, &block)
       @app = app
@@ -40,13 +43,13 @@ module Rack
     end
 
     def call(env)
-      env['HTTP_ORIGIN'] ||= env['HTTP_X_ORIGIN']
+      env[ORIGIN_HEADER_KEY] ||= env['HTTP_X_ORIGIN']
 
       add_headers = nil
-      if env['HTTP_ORIGIN']
+      if env[ORIGIN_HEADER_KEY]
         debug(env) do
           [ 'Incoming Headers:',
-            "  Origin: #{env['HTTP_ORIGIN']}",
+            "  Origin: #{env[ORIGIN_HEADER_KEY]}",
             "  Access-Control-Request-Method: #{env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']}",
             "  Access-Control-Request-Headers: #{env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}"
             ].join("\n")
@@ -62,8 +65,8 @@ module Rack
         else
           add_headers = process_cors(env)
         end
-      elsif debug?
-        add_headers = { HEADER_KEY => "miss; no-origin-header" }
+      else
+        Result.miss(env, Result::MISS_NO_ORIGIN)
       end
 
       status, headers, body = @app.call env
@@ -76,6 +79,10 @@ module Rack
           vary = headers['Vary']
           headers['Vary'] = ((vary ? vary.split(/,\s*/) : []) + ['Origin']).uniq.join(', ')
         end
+      end
+
+      if debug? && result = env[ENV_KEY]
+        result.append_header(headers)
       end
 
       [status, headers, body]
@@ -108,30 +115,35 @@ module Rack
       end
 
       def process_preflight(env)
-        resource, error = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
+        resource, error = find_resource(env)
         if resource
+          Result.preflight_hit(env)
           preflight = resource.process_preflight(env)
-          preflight.merge!(HEADER_KEY => 'preflight-hit') if debug?
           preflight
 
-        elsif debug?
-          { HEADER_KEY => ['preflight-miss', error].compact.join('; ') }
+        else
+          Result.preflight_miss(env, error)
+          nil
         end
       end
 
       def process_cors(env)
-        resource, error = find_resource(env['HTTP_ORIGIN'], env['PATH_INFO'],env)
+        resource, error = find_resource(env)
         if resource
+          Result.hit(env)
           cors = resource.to_headers(env)
-          cors.merge!(HEADER_KEY => 'hit') if debug?
           cors
 
-        elsif debug?
-          { HEADER_KEY => ['miss', error].compact.join('; ') }
+        else
+          Result.miss(env, error)
+          nil
         end
       end
 
-      def find_resource(origin, path, env)
+      def find_resource(env)
+        path   = env[PATH_INFO_HEADER_KEY]
+        origin = env[ORIGIN_HEADER_KEY]
+
         origin_matched = false
         all_resources.each do |r|
           if r.allow_origin?(origin, env)
@@ -142,7 +154,65 @@ module Rack
           end
         end
 
-        [nil, origin_matched ? 'no-path-match' : 'no-origin-match']
+        [nil, origin_matched ? Result::MISS_NO_PATH : Result::MISS_NO_ORIGIN]
+      end
+
+      class Result
+        HEADER_KEY = 'X-Rack-CORS'.freeze
+
+        MISS_NO_ORIGIN = 'no-origin'.freeze
+        MISS_NO_PATH   = 'no-path'.freeze
+
+        attr_accessor :preflight, :hit, :miss_reason
+
+        def hit?
+          !!hit
+        end
+
+        def preflight?
+          !!preflight
+        end
+
+        def self.hit(env)
+          r = Result.new
+          r.preflight = false
+          r.hit = true
+          env[ENV_KEY] = r
+        end
+
+        def self.miss(env, reason)
+          r = Result.new
+          r.preflight = false
+          r.hit = false
+          r.miss_reason = reason
+          env[ENV_KEY] = r
+        end
+
+        def self.preflight_hit(env)
+          r = Result.new
+          r.preflight = true
+          r.hit = true
+          env[ENV_KEY] = r
+        end
+
+        def self.preflight_miss(env, reason)
+          r = Result.new
+          r.preflight = true
+          r.hit = false
+          r.miss_reason = reason
+          env[ENV_KEY] = r
+        end
+
+        def append_header(headers)
+          headers[HEADER_KEY] = if hit?
+            preflight? ? 'preflight-hit' : 'hit'
+          else
+            [
+              (preflight? ? 'preflight-miss' : 'preflight-hit'),
+              miss_reason
+            ].join('; ')
+          end
+        end
       end
 
       class Resources
@@ -225,7 +295,7 @@ module Rack
         def to_headers(env)
           x_origin = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
           h = {
-            'Access-Control-Allow-Origin'     => origin_for_response_header(env['HTTP_ORIGIN']),
+            'Access-Control-Allow-Origin'     => origin_for_response_header(env[ORIGIN_HEADER_KEY]),
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
             'Access-Control-Expose-Headers'   => expose.nil? ? '' : expose.join(', '),
             'Access-Control-Max-Age'          => max_age.to_s }
