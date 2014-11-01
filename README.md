@@ -1,13 +1,8 @@
 # Rack CORS Middleware
 
-`Rack::Cors` provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.  The CORS spec allows web applications to make cross domain AJAX calls without
-using workarounds such as JSONP.  For a thorough write up on CORS, see this blog post:
+`Rack::Cors` provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.  
 
-http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/
-
-Or for all the gory details, you can read the spec here:
-
-http://www.w3.org/TR/cors/
+The [CORS spec](http://www.w3.org/TR/cors/) allows web applications to make cross domain AJAX calls without using workarounds such as JSONP. See [Cross-domain Ajax with Cross-Origin Resource Sharing](http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/)
 
 ## Installation
 
@@ -26,7 +21,7 @@ gem 'rack-cors', :require => 'rack/cors'
 
 ### Rack
 
-You configure `Rack::Cors` by passing a block to the `use` command:
+In `config.ru`, configure `Rack::Cors` by passing a block to the `use` command:
 
 ```ruby
 use Rack::Cors do
@@ -70,12 +65,11 @@ module YourApp
   end
 end
 ```
-Refer to `examples/rails3` and `examples/rails4` for more details.
+Refer to [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails3) and [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails4) for more details.
 
-See http://guides.rubyonrails.org/rails_on_rack.html for more details on rack middlewares or
-http://railscasts.com/episodes/151-rack-middleware.
+See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware.)
 
-#### Positioning in the Middleware Stack
+#### Common Gotcha
 
 A common issue with `Rack::Cors` is that incorrect positioning of `Rack::Cors` in the middleware stack can produce unexpected results.  Here are some common middleware that `Rack::Cors` should be inserted before:
 
