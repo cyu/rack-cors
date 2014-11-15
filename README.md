@@ -55,7 +55,7 @@ module YourApp
 
     # ...
 
-    config.middleware.insert_before "ActionDispatch::Static", "Rack::Cors" do
+    config.middleware.insert_before 0, "Rack::Cors" do
       allow do
         origins '*'
         resource '*', :headers => :any, :methods => [:get, :post, :options]
@@ -69,11 +69,45 @@ Refer to [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples
 
 See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware.)
 
-#### Common Gotcha
+### Configuration Reference
 
-A common issue with `Rack::Cors` is that incorrect positioning of `Rack::Cors` in the middleware stack can produce unexpected results.  Here are some common middleware that `Rack::Cors` should be inserted before:
+#### Middleware Options
+* **debug** (boolean):  Enables debug logging and `X-Rack-CORS` HTTP headers for debugging.
+* **logger** (Object or Proc): Specify the logger to log to.  If a proc is provided, it will be called when a logger is needed (this is helpful in cases where the logger is initialized after `Rack::Cors` is used, like `Rails.logger`.
 
-* **ActionDispatch::Static** if you want to serve static files.  Note that this might still not work as static files are usually served from the web server (Nginx, Apache) and not the Rails container.
-* **Rack::Cache** if your resources are going to be cached.
-* **Warden::Manager** if your resources are going to require authentication
+#### Origin
+Origins can be specified as a string, a regular expression, or as '*' to allow all origins.
 
+#### Resource
+A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '*' wildcard (`/all/files/in/*`).  A resource that take the following options:
+
+* **methods** (string or array): The HTTP methods allowed for the resource.
+* **headers** (string or array or `:any`): The HTTP headers that will be allowed in the CORS resource request.  Use `:any` to allow for any headers in the actual request.
+* **expose** (string or an array): The HTTP headers in the resource response can can be exposed to the client.
+* **credentials** (boolean): Sets the `Access-Control-Allow-Credentials` response header.
+* **max_age** (number): Sets the `Access-Control-Max-Age` response header.
+
+
+## Common Gotchas
+
+Incorrect positioning of `Rack::Cors` in the middleware stack can produce unexpected results.  The Rails example above will put it above all middleware which should cover most issues.
+
+Here are some common cases:
+
+* **Serving static files.**  Insert this middleware before `ActionDispatch::Static` so that static files are served with the proper CORS headers (see note below for a caveat).  **NOTE:** that this might not work in production environments as static files are usually served from the web server (Nginx, Apache) and not the Rails container.
+
+* **Caching in the middleware.**  Insert this middleware before `Rack::Cache` so that the proper CORS headers are written and not cached ones.
+
+* **Authenication via Warden**  Warden will return immediately if a resource that requires authentication is accessed without authentication.  If `Warden::Manager`is in the stack before `Rack::Cors`, it will return without the correct CORS headers being applied, resulting in a failed CORS request.  Be sure to insert this middleware before 'Warden::Manager`.
+
+To determine where to put the CORS middleware in the Rack stack, run the following command:
+
+```bash
+bundle exec rake middleware
+```
+
+In many cases, the Rack stack will be different running in production environments.  For example, the `ActionDispatch::Static` middleware will not be part of the stack if `config.serve_static_assets = false`.  You can run the following command to see what your middleware stack looks like in production:
+
+```bash
+bundle exec rake RAILS_ENV=production rake middleware
+```
