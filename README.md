@@ -65,7 +65,7 @@ module YourApp
   end
 end
 ```
-Refer to [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails3) and [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails4) for more details.
+Refer to [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails3) and [rails 4 example](https://github.com/cyu/rack-cors/tree/master/examples/rails4) for more details.
 
 See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware.)
 
