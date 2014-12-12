@@ -98,7 +98,7 @@ Here are some common cases:
 
 * **Caching in the middleware.**  Insert this middleware before `Rack::Cache` so that the proper CORS headers are written and not cached ones.
 
-* **Authenication via Warden**  Warden will return immediately if a resource that requires authentication is accessed without authentication.  If `Warden::Manager`is in the stack before `Rack::Cors`, it will return without the correct CORS headers being applied, resulting in a failed CORS request.  Be sure to insert this middleware before 'Warden::Manager`.
+* **Authentication via Warden**  Warden will return immediately if a resource that requires authentication is accessed without authentication.  If `Warden::Manager`is in the stack before `Rack::Cors`, it will return without the correct CORS headers being applied, resulting in a failed CORS request.  Be sure to insert this middleware before 'Warden::Manager`.
 
 To determine where to put the CORS middleware in the Rack stack, run the following command:
 
