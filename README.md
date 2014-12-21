@@ -1,4 +1,4 @@
-# Rack CORS Middleware
+# Rack CORS Middleware [![Build Status](https://travis-ci.org/cyu/rack-cors.svg?branch=master)](https://travis-ci.org/cyu/rack-cors)
 
 `Rack::Cors` provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.  
 
