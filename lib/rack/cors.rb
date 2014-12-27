@@ -2,7 +2,7 @@ require 'logger'
 
 module Rack
   class Cors
-    ENV_KEY    = 'X_RACK_CORS'.freeze
+    ENV_KEY = 'rack.cors'.freeze
 
     ORIGIN_HEADER_KEY     = 'HTTP_ORIGIN'.freeze
     PATH_INFO_HEADER_KEY  = 'PATH_INFO'.freeze

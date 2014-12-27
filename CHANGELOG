@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.3.1 - 2014-12-27
+### Changed
+- Changed the env key to rack.cors to avoid Rack::Lint warnings
+
 ## 0.3.0 - 2014-10-19
 ### Added
 - Added support for defining a logger with a Proc
