@@ -109,5 +109,5 @@ bundle exec rake middleware
 In many cases, the Rack stack will be different running in production environments.  For example, the `ActionDispatch::Static` middleware will not be part of the stack if `config.serve_static_assets = false`.  You can run the following command to see what your middleware stack looks like in production:
 
 ```bash
-bundle exec RAILS_ENV=production rake middleware
+RAILS_ENV=production bundle exec rake middleware
 ```
