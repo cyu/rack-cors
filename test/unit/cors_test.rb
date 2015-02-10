@@ -75,16 +75,23 @@ describe Rack::Cors do
     last_response.headers['Access-Control-Expose-Headers'].must_equal 'expose-test-1, expose-test-2'
   end
 
+  # Explanation: http://www.fastly.com/blog/best-practices-for-using-the-vary-header/
+  it "should add Vary header if resource matches even if Origin header isn't present" do
+    get '/'
+    should_render_cors_failure
+    last_response.headers['Vary'].must_equal 'Origin'
+  end
+
   it 'should add Vary header if Access-Control-Allow-Origin header was added and if it is specific' do
     cors_request '/', :origin => "http://192.168.0.3:8080"
     last_response.headers['Access-Control-Allow-Origin'].must_equal 'http://192.168.0.3:8080'
     last_response.headers['Vary'].wont_be_nil
   end
 
-  it 'should not add Vary header if Access-Control-Allow-Origin header was added and if it is generic (*)' do
+  it 'should add Vary header even if Access-Control-Allow-Origin header was added and it is generic (*)' do
     cors_request '/public_without_credentials', :origin => "http://192.168.1.3:8080"
     last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
-    last_response.headers['Vary'].must_be_nil
+    last_response.headers['Vary'].must_equal 'Origin'
   end
 
   it 'should support multi allow configurations for the same resource' do
@@ -94,7 +101,7 @@ describe Rack::Cors do
 
     cors_request '/multi-allow-config', :origin => "http://192.168.1.3:8080"
     last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
-    last_response.headers['Vary'].must_be_nil
+    last_response.headers['Vary'].must_equal 'Origin'
   end
 
   it "should not return CORS headers on OPTIONS request if Access-Control-Allow-Origin is not present" do
