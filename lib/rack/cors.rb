@@ -69,16 +69,23 @@ module Rack
         Result.miss(env, Result::MISS_NO_ORIGIN)
       end
 
+      # This call must be done BEFORE calling the app because for some reason
+      # env[PATH_INFO_HEADER_KEY] gets changed after that and it won't match.
+      # (At least in rails 4.1.6)
+      add_vary_origin = all_resources.detect {|r| r.find_resource(env[PATH_INFO_HEADER_KEY]) }
+
       status, headers, body = @app.call env
 
       if add_headers
         headers = headers.merge(add_headers)
+      end
 
-        # http://www.w3.org/TR/cors/#resource-implementation
-        unless headers['Access-Control-Allow-Origin'] == '*'
-          vary = headers['Vary']
-          headers['Vary'] = ((vary ? vary.split(/,\s*/) : []) + ['Origin']).uniq.join(', ')
-        end
+      # Vary header should ALWAYS mention Origin if there's ANY chance for the
+      # response to be different depending on the Origin header value.
+      # Better explained here: http://www.fastly.com/blog/best-practices-for-using-the-vary-header/
+      if add_vary_origin
+        vary = headers['Vary']
+        headers['Vary'] = ((vary ? vary.split(/,\s*/) : []) + ['Origin']).uniq.join(', ')
       end
 
       if debug? && result = env[ENV_KEY]
