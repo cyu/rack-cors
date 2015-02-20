@@ -274,7 +274,6 @@ module Rack
 
         def initialize(public_resource, path, opts={})
           self.path        = path
-          self.methods     = prepare_and_validate_methods_option(opts[:methods]) || [:get]
           self.credentials = opts[:credentials].nil? ? true : opts[:credentials]
           self.max_age     = opts[:max_age] || 1728000
           self.pattern     = compile(path)
@@ -285,6 +284,12 @@ module Rack
           when nil then nil
           else
             [opts[:headers]].flatten.collect{|h| h.downcase}
+          end
+          
+          self.methods = case opts[:methods]
+          when :any then [:get, :post, :put, :delete, :options]
+          else
+            ensure_enum(opts[:methods]) || [:get]
           end
 
           self.expose = opts[:expose] ? [opts[:expose]].flatten : nil
@@ -344,11 +349,6 @@ module Rack
               request_headers = request_headers.split(/,\s*/) if request_headers.kind_of?(String)
               request_headers.all?{|h| headers.include?(h.downcase)}
             end
-          end
-
-          def prepare_and_validate_methods_option setting
-            raise ArgumentError.new("rack-cors methods must be an single HTTP verb, or an array of verbs") if setting && setting == :any
-            ensure_enum setting
           end
 
           def ensure_enum(v)
