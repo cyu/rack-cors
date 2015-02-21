@@ -197,6 +197,11 @@ describe Rack::Cors do
       should_render_cors_success
     end
 
+    it 'should allow any method if methods = :any' do
+      preflight_request('http://localhost:3000', '/', :methods => :any)
+      should_render_cors_success
+    end
+
     it 'should allow header case insensitive match' do
       preflight_request('http://localhost:3000', '/single_header', :headers => 'X-Domain-Token')
       should_render_cors_success

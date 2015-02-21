@@ -6,7 +6,7 @@ use Rack::Cors do
     origins 'localhost:3000', '127.0.0.1:3000', /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/, 'file://'
 
     resource '/get-only', :methods => :get
-    resource '/', :headers => :any
+    resource '/', :headers => :any, :methods => :any
     resource '/options', :methods => :options
     resource '/single_header', :headers => 'x-domain-token'
     resource '/two_headers', :headers => %w{x-domain-token x-requested-with}
