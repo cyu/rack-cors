@@ -287,7 +287,7 @@ module Rack
           end
           
           self.methods = case opts[:methods]
-          when :any then [:get, :post, :put, :delete, :options]
+          when :any then [:get, :head, :post, :put, :patch, :delete, :options]
           else
             ensure_enum(opts[:methods]) || [:get]
           end
