@@ -82,6 +82,11 @@ describe Rack::Cors do
     last_response.headers['Vary'].must_equal 'Origin'
   end
 
+  it "should add Vary header based on :vary option" do
+    cors_request '/vary_test'
+    last_response.headers['Vary'].must_equal 'Origin, Host'
+  end
+
   it 'should add Vary header if Access-Control-Allow-Origin header was added and if it is specific' do
     cors_request '/', :origin => "http://192.168.0.3:8080"
     last_response.headers['Access-Control-Allow-Origin'].must_equal 'http://192.168.0.3:8080'

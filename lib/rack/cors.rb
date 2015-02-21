@@ -6,6 +6,8 @@ module Rack
 
     ORIGIN_HEADER_KEY     = 'HTTP_ORIGIN'.freeze
     PATH_INFO_HEADER_KEY  = 'PATH_INFO'.freeze
+    VARY_HEADER_KEY       = 'Vary'.freeze
+    DEFAULT_VARY_HEADERS  = ['Origin'].freeze
 
     def initialize(app, opts={}, &block)
       @app = app
@@ -72,7 +74,7 @@ module Rack
       # This call must be done BEFORE calling the app because for some reason
       # env[PATH_INFO_HEADER_KEY] gets changed after that and it won't match.
       # (At least in rails 4.1.6)
-      add_vary_origin = !!resource_for_path(env[PATH_INFO_HEADER_KEY])
+      vary_resource = resource_for_path(env[PATH_INFO_HEADER_KEY])
 
       status, headers, body = @app.call env
 
@@ -83,9 +85,14 @@ module Rack
       # Vary header should ALWAYS mention Origin if there's ANY chance for the
       # response to be different depending on the Origin header value.
       # Better explained here: http://www.fastly.com/blog/best-practices-for-using-the-vary-header/
-      if add_vary_origin
-        vary = headers['Vary']
-        headers['Vary'] = ((vary ? vary.split(/,\s*/) : []) + ['Origin']).uniq.join(', ')
+      if vary_resource
+        vary = headers[VARY_HEADER_KEY]
+        cors_vary_headers = if vary_resource.vary_headers && vary_resource.vary_headers.any?
+          vary_resource.vary_headers
+        else
+          DEFAULT_VARY_HEADERS
+        end
+        headers[VARY_HEADER_KEY] = ((vary ? vary.split(/,\s*/) : []) + cors_vary_headers).uniq.join(', ')
       end
 
       if debug? && result = env[ENV_KEY]
@@ -148,7 +155,12 @@ module Rack
       end
 
       def resource_for_path(path_info)
-        all_resources.detect { |r| r.resource_for_path(path_info) }
+        all_resources.each do |r|
+          if found = r.resource_for_path(path_info)
+            return found
+          end
+        end
+        nil
       end
 
       def match_resource(env)
@@ -279,15 +291,16 @@ module Rack
       end
 
       class Resource
-        attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern, :if_proc
+        attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern, :if_proc, :vary_headers
 
         def initialize(public_resource, path, opts={})
-          self.path        = path
-          self.credentials = opts[:credentials].nil? ? true : opts[:credentials]
-          self.max_age     = opts[:max_age] || 1728000
-          self.pattern     = compile(path)
-          self.if_proc     = opts[:if]
-          @public_resource = public_resource
+          self.path         = path
+          self.credentials  = opts[:credentials].nil? ? true : opts[:credentials]
+          self.max_age      = opts[:max_age] || 1728000
+          self.pattern      = compile(path)
+          self.if_proc      = opts[:if]
+          self.vary_headers = opts[:vary] && [opts[:vary]].flatten
+          @public_resource  = public_resource
 
           self.headers = case opts[:headers]
           when :any then :any
