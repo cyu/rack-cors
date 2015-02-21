@@ -83,9 +83,11 @@ A Resource path can be specified as exact string match (`/path/to/file.txt`) or 
 
 * **methods** (string or array): The HTTP methods allowed for the resource.
 * **headers** (string or array or `:any`): The HTTP headers that will be allowed in the CORS resource request.  Use `:any` to allow for any headers in the actual request.
-* **expose** (string or an array): The HTTP headers in the resource response can can be exposed to the client.
+* **expose** (string or array): The HTTP headers in the resource response can can be exposed to the client.
 * **credentials** (boolean): Sets the `Access-Control-Allow-Credentials` response header.
 * **max_age** (number): Sets the `Access-Control-Max-Age` response header.
+* **if** (Proc): If the result of the proc is true, will process the request as a valid CORS request.
+* **vary** (string or array): A list of HTTP headers to add to the 'Vary' header.
 
 
 ## Common Gotchas
