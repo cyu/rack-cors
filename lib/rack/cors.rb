@@ -72,7 +72,7 @@ module Rack
       # This call must be done BEFORE calling the app because for some reason
       # env[PATH_INFO_HEADER_KEY] gets changed after that and it won't match.
       # (At least in rails 4.1.6)
-      add_vary_origin = all_resources.detect {|r| r.find_resource(env[PATH_INFO_HEADER_KEY]) }
+      add_vary_origin = !!resource_for_path(env[PATH_INFO_HEADER_KEY])
 
       status, headers, body = @app.call env
 
@@ -122,7 +122,7 @@ module Rack
       end
 
       def process_preflight(env)
-        resource, error = find_resource(env)
+        resource, error = match_resource(env)
         if resource
           Result.preflight_hit(env)
           preflight = resource.process_preflight(env)
@@ -135,7 +135,7 @@ module Rack
       end
 
       def process_cors(env)
-        resource, error = find_resource(env)
+        resource, error = match_resource(env)
         if resource
           Result.hit(env)
           cors = resource.to_headers(env)
@@ -147,7 +147,11 @@ module Rack
         end
       end
 
-      def find_resource(env)
+      def resource_for_path(path_info)
+        all_resources.detect { |r| r.resource_for_path(path_info) }
+      end
+
+      def match_resource(env)
         path   = env[PATH_INFO_HEADER_KEY]
         origin = env[ORIGIN_HEADER_KEY]
 
@@ -155,7 +159,7 @@ module Rack
         all_resources.each do |r|
           if r.allow_origin?(origin, env)
             origin_matched = true
-            if found = r.find_resource(path)
+            if found = r.match_resource(path, env)
               return [found, nil]
             end
           end
@@ -264,19 +268,25 @@ module Rack
           end
         end
 
-        def find_resource(path)
-          @resources.detect{|r| r.match?(path)}
+        def match_resource(path, env)
+          @resources.detect { |r| r.match?(path, env) }
         end
+
+        def resource_for_path(path)
+          @resources.detect { |r| r.matches_path?(path) }
+        end
+
       end
 
       class Resource
-        attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern
+        attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern, :if_proc
 
         def initialize(public_resource, path, opts={})
           self.path        = path
           self.credentials = opts[:credentials].nil? ? true : opts[:credentials]
           self.max_age     = opts[:max_age] || 1728000
           self.pattern     = compile(path)
+          self.if_proc     = opts[:if]
           @public_resource = public_resource
 
           self.headers = case opts[:headers]
@@ -285,7 +295,7 @@ module Rack
           else
             [opts[:headers]].flatten.collect{|h| h.downcase}
           end
-          
+
           self.methods = case opts[:methods]
           when :any then [:get, :head, :post, :put, :patch, :delete, :options]
           else
@@ -295,8 +305,12 @@ module Rack
           self.expose = opts[:expose] ? [opts[:expose]].flatten : nil
         end
 
-        def match?(path)
+        def matches_path?(path)
           pattern =~ path
+        end
+
+        def match?(path, env)
+          matches_path?(path) && (if_proc.nil? || if_proc.call(env))
         end
 
         def process_preflight(env)

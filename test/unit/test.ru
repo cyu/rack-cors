@@ -12,6 +12,7 @@ use Rack::Cors do
     resource '/two_headers', :headers => %w{x-domain-token x-requested-with}
     resource '/expose_single_header', :expose => 'expose-test'
     resource '/expose_multiple_headers', :expose => %w{expose-test-1 expose-test-2}
+    resource '/conditional', :methods => :get, :if => proc { |env| !!env['HTTP_X_OK'] }
     # resource '/file/at/*',
     #     :methods => [:get, :post, :put, :delete],
     #     :headers => :any,

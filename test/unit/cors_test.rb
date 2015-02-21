@@ -109,7 +109,18 @@ describe Rack::Cors do
     last_response.headers['Access-Control-Allow-Origin'].must_be_nil
   end
 
-  describe 'logging' do
+  it "should not apply CORS headers if it does not match conditional on resource" do
+    header 'Origin', 'http://192.168.0.1:1234'
+    get '/conditional'
+    should_render_cors_failure
+  end
+
+  it "should apply CORS headers if it does match conditional on resource" do
+    header 'X-OK', '1'
+    cors_request '/conditional', :origin => 'http://192.168.0.1:1234'
+  end
+
+ describe 'logging' do
     it 'should not log debug messages if debug option is false' do
       app = mock
       app.stubs(:call).returns(200, {}, [''])
