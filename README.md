@@ -65,6 +65,14 @@ module YourApp
   end
 end
 ```
+
+In your controller, be sure to skip the `verify_authenticity_token` callback.
+
+```ruby
+class CorsController < ApplicationController
+  skip_before_filter :verify_authenticity_token
+```
+
 Refer to [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails3) and [rails 4 example](https://github.com/cyu/rack-cors/tree/master/examples/rails4) for more details.
 
 See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware.)
