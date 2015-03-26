@@ -5,6 +5,7 @@ module Rack
     ENV_KEY = 'rack.cors'.freeze
 
     ORIGIN_HEADER_KEY     = 'HTTP_ORIGIN'.freeze
+    ORIGIN_X_HEADER_KEY   = 'HTTP_X_ORIGIN'.freeze
     PATH_INFO_HEADER_KEY  = 'PATH_INFO'.freeze
     VARY_HEADER_KEY       = 'Vary'.freeze
     DEFAULT_VARY_HEADERS  = ['Origin'].freeze
@@ -45,7 +46,7 @@ module Rack
     end
 
     def call(env)
-      env[ORIGIN_HEADER_KEY] ||= env['HTTP_X_ORIGIN']
+      env[ORIGIN_HEADER_KEY] ||= env[ORIGIN_X_HEADER_KEY] if env[ORIGIN_X_HEADER_KEY]
 
       add_headers = nil
       if env[ORIGIN_HEADER_KEY]

@@ -272,6 +272,21 @@ describe Rack::Cors do
     end
   end
 
+  describe 'Rack::Lint' do
+    def app
+      @app ||= Rack::Builder.new do
+        use Rack::Cors
+        use Rack::Lint
+        run ->(env) { [200, {'Content-Type' => 'text/html'}, ['hello']] }
+      end
+    end
+
+    it 'is lint-compliant with non-CORS request' do
+      get '/'
+      last_response.status.must_equal 200
+    end
+  end
+
   protected
     def cors_request(*args)
       path = args.first.is_a?(String) ? args.first : '/'

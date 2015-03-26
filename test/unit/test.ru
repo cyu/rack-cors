@@ -1,6 +1,7 @@
 require 'rack/cors'
 
 #use Rack::Cors, :debug => true, :logger => ::Logger.new(STDOUT) do
+use Rack::Lint
 use Rack::Cors do
   allow do
     origins 'localhost:3000', '127.0.0.1:3000', /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/, 'file://'
