@@ -314,8 +314,8 @@ module Rack
           when :any then [:get, :head, :post, :put, :patch, :delete, :options]
           else
             ensure_enum(opts[:methods]) || [:get]
-          end
-
+          end.map{|e| e.to_s }
+          
           self.expose = opts[:expose] ? [opts[:expose]].flatten : nil
         end
 
@@ -363,7 +363,7 @@ module Rack
 
           def invalid_method_request?(env)
             request_method = env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
-            request_method.nil? || !methods.include?(request_method.downcase.to_sym)
+            request_method.nil? || !methods.include?(request_method.downcase)
           end
 
           def invalid_headers_request?(env)
