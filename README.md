@@ -79,7 +79,7 @@ See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) 
 Origins can be specified as a string, a regular expression, or as '*' to allow all origins.
 
 #### Resource
-A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '*' wildcard (`/all/files/in/*`).  A resource that take the following options:
+A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a wildcard (`/all/files/in/*`).  A resource that take the following options:
 
 * **methods** (string or array): The HTTP methods allowed for the resource.
 * **headers** (string or array or `:any`): The HTTP headers that will be allowed in the CORS resource request.  Use `:any` to allow for any headers in the actual request.
