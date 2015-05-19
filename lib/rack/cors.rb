@@ -14,17 +14,17 @@ module Rack
       @app = app
       @debug_mode = !!opts[:debug]
 
-      if logger = opts[:logger]
-        if logger.respond_to? :call
+      if opts[:logger]
+        if opts[:logger].respond_to? :call
           @logger_proc = opts[:logger]
         else
-          @logger = logger
+          @logger = opts[:logger]
         end
       end
 
       if block_given?
         if block.arity == 1
-          block.call(self)
+          yield self
         else
           instance_eval(&block)
         end
@@ -39,7 +39,7 @@ module Rack
       all_resources << (resources = Resources.new)
 
       if block.arity == 1
-        block.call(resources)
+        yield resources
       else
         resources.instance_eval(&block)
       end
@@ -96,8 +96,8 @@ module Rack
         headers[VARY_HEADER_KEY] = ((vary ? vary.split(/,\s*/) : []) + cors_vary_headers).uniq.join(', ')
       end
 
-      if debug? && result = env[ENV_KEY]
-        result.append_header(headers)
+      if debug? && env[ENV_KEY]
+        env[ENV_KEY].append_header(headers)
       end
 
       [status, headers, body]
@@ -113,13 +113,10 @@ module Rack
           logger_proc = @logger_proc
           @logger_proc = nil
           logger_proc.call
-
         elsif defined?(Rails) && Rails.logger
           Rails.logger
-
         elsif env['rack.logger']
           env['rack.logger']
-
         else
           ::Logger.new(STDOUT).tap { |logger| logger.level = ::Logger::Severity::DEBUG }
         end
@@ -133,9 +130,7 @@ module Rack
         resource, error = match_resource(env)
         if resource
           Result.preflight_hit(env)
-          preflight = resource.process_preflight(env)
-          preflight
-
+          resource.process_preflight(env)
         else
           Result.preflight_miss(env, error)
           nil
@@ -146,9 +141,7 @@ module Rack
         resource, error = match_resource(env)
         if resource
           Result.hit(env)
-          cors = resource.to_headers(env)
-          cors
-
+          resource.to_headers(env)
         else
           Result.miss(env, error)
           nil
@@ -269,9 +262,7 @@ module Rack
 
         def allow_origin?(source,env = {})
           return true if public_resources?
-
           effective_source = (source == 'null' ? 'file://' : source)
-
           return !! @origins.detect do |origin|
             if origin.is_a?(Proc)
               origin.call(source,env)
@@ -333,7 +324,6 @@ module Rack
         end
 
         def to_headers(env)
-          x_origin = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
           h = {
             'Access-Control-Allow-Origin'     => origin_for_response_header(env[ORIGIN_HEADER_KEY]),
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
