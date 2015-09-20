@@ -61,7 +61,7 @@ module YourApp
         resource '*', :headers => :any, :methods => [:get, :post, :options]
       end
     end
-      
+
   end
 end
 ```
@@ -77,6 +77,11 @@ See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) 
 
 #### Origin
 Origins can be specified as a string, a regular expression, or as '*' to allow all origins.
+
+Additionally, origins can be specified dynamically via a block of the following form:
+```ruby
+  origins { |source, env| true || false }
+```
 
 #### Resource
 A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '\*' wildcard (`/all/files/in/*`).  A resource that take the following options:
