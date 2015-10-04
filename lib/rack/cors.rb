@@ -333,7 +333,6 @@ module Rack
         end
 
         def to_headers(env)
-          x_origin = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
           h = {
             'Access-Control-Allow-Origin'     => origin_for_response_header(env[ORIGIN_HEADER_KEY]),
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
