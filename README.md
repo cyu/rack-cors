@@ -27,7 +27,7 @@ In `config.ru`, configure `Rack::Cors` by passing a block to the `use` command:
 use Rack::Cors do
   allow do
     origins 'localhost:3000', '127.0.0.1:3000',
-            /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/
+            /^http:\/\/192\.168\.0\.\d{1,3}(:\d+)?$/
             # regular expressions can be used here
 
     resource '/file/list_all/', :headers => 'x-domain-token'
@@ -76,7 +76,9 @@ See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) 
 * **logger** (Object or Proc): Specify the logger to log to.  If a proc is provided, it will be called when a logger is needed (this is helpful in cases where the logger is initialized after `Rack::Cors` is used, like `Rails.logger`.
 
 #### Origin
-Origins can be specified as a string, a regular expression, or as '*' to allow all origins.
+Origins can be specified as a string, a regular expression**, or as '*' to allow all origins.
+
+**\*SECURITY NOTE:** Be careful when using regular expressions to not accidentally be too inclusive.  For example, the expression `/https:\/\/example\.com/` will match the domain *example.com.randomdomainname.co.uk*.  It is recommended that any regular expression be enclosed with start & end string anchors (`^$`).
 
 Additionally, origins can be specified dynamically via a block of the following form:
 ```ruby
