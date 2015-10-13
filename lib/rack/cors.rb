@@ -253,7 +253,7 @@ module Rack
                  /^https?:\/\//,
                  'file://'        then n
             when '*'              then @public_resources = true; n
-            else                  Regexp.compile("^[a-z][a-z0-9.+-]*:\\\/\\\/#{Regexp.quote(n)}")
+            else                  Regexp.compile("^[a-z][a-z0-9.+-]*:\\\/\\\/#{Regexp.quote(n)}$")
             end
           end.flatten
           @origins.push(blk) if blk
