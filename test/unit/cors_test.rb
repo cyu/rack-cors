@@ -1,9 +1,9 @@
-require 'rubygems'
 require 'minitest/autorun'
 require 'rack/test'
 require 'mocha/setup'
 require 'rack/cors'
 require 'ostruct'
+require 'pry'
 
 Rack::Test::Session.class_eval do
   def options(uri, params = {}, env = {}, &block)
@@ -284,6 +284,32 @@ describe Rack::Cors do
     it 'is lint-compliant with non-CORS request' do
       get '/'
       last_response.status.must_equal 200
+    end
+  end
+
+  describe 'with app overriding CORS header' do
+    let(:app) do
+      Rack::Builder.new do
+        use Rack::Cors, debug: true, logger: Logger.new(StringIO.new) do
+          allow do
+            origins '*'
+            resource '/'
+          end
+        end
+        map('/') do
+          run ->(env) { [200, {'Content-Type' => 'text/plain', 'Access-Control-Allow-Origin' => 'http://foo.net'}, ['success']] }
+        end
+      end
+    end
+
+    it "should return app header" do
+      cors_request origin: "http://example.net"
+      last_response.headers['Access-Control-Allow-Origin'].must_equal "http://foo.net"
+    end
+
+    it "should return original headers if in debug" do
+      cors_request origin: "http://example.net"
+      last_response.headers['X-Rack-CORS-Original-Access-Control-Allow-Origin'].must_equal "http://example.net"
     end
   end
 

@@ -80,7 +80,14 @@ module Rack
       status, headers, body = @app.call env
 
       if add_headers
-        headers = headers.merge(add_headers)
+        headers = add_headers.merge(headers)
+        debug(env) do
+          add_headers.each_pair do |key, value|
+            if headers.has_key?(key)
+              headers["X-Rack-CORS-Original-#{key}"] = value
+            end
+          end
+        end
       end
 
       # Vary header should ALWAYS mention Origin if there's ANY chance for the
