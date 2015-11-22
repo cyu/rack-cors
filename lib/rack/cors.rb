@@ -53,7 +53,7 @@ module Rack
       end
       status, headers, body = @app.call env
       if cors_headers
-        headers = headers.merge(cors_headers)
+        headers = headers.reverse_merge(cors_headers)
 
         # http://www.w3.org/TR/cors/#resource-implementation
         unless headers['Access-Control-Allow-Origin'] == '*'
