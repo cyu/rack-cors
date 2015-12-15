@@ -1,6 +1,6 @@
 # Rack CORS Middleware [![Build Status](https://travis-ci.org/cyu/rack-cors.svg?branch=master)](https://travis-ci.org/cyu/rack-cors)
 
-`Rack::Cors` provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.  
+`Rack::Cors` provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.
 
 The [CORS spec](http://www.w3.org/TR/cors/) allows web applications to make cross domain AJAX calls without using workarounds such as JSONP. See [Cross-domain Ajax with Cross-Origin Resource Sharing](http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/)
 
@@ -27,7 +27,7 @@ In `config.ru`, configure `Rack::Cors` by passing a block to the `use` command:
 use Rack::Cors do
   allow do
     origins 'localhost:3000', '127.0.0.1:3000',
-            /^http:\/\/192\.168\.0\.\d{1,3}(:\d+)?$/
+            /\Ahttp:\/\/192\.168\.0\.\d{1,3}(:\d+)?\z/
             # regular expressions can be used here
 
     resource '/file/list_all/', :headers => 'x-domain-token'
@@ -78,7 +78,7 @@ See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) 
 #### Origin
 Origins can be specified as a string, a regular expression**, or as '*' to allow all origins.
 
-**\*SECURITY NOTE:** Be careful when using regular expressions to not accidentally be too inclusive.  For example, the expression `/https:\/\/example\.com/` will match the domain *example.com.randomdomainname.co.uk*.  It is recommended that any regular expression be enclosed with start & end string anchors (`^$`).
+**\*SECURITY NOTE:** Be careful when using regular expressions to not accidentally be too inclusive.  For example, the expression `/https:\/\/example\.com/` will match the domain *example.com.randomdomainname.co.uk*.  It is recommended that any regular expression be enclosed with start & end string anchors (`\A\z`).
 
 Additionally, origins can be specified dynamically via a block of the following form:
 ```ruby
