@@ -88,7 +88,7 @@ Additionally, origins can be specified dynamically via a block of the following 
 #### Resource
 A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '\*' wildcard (`/all/files/in/*`).  A resource that take the following options:
 
-* **methods** (string or array): The HTTP methods allowed for the resource.
+* **methods** (string or array or `:any`): The HTTP methods allowed for the resource.
 * **headers** (string or array or `:any`): The HTTP headers that will be allowed in the CORS resource request.  Use `:any` to allow for any headers in the actual request.
 * **expose** (string or array): The HTTP headers in the resource response can can be exposed to the client.
 * **credentials** (boolean): Sets the `Access-Control-Allow-Credentials` response header.
