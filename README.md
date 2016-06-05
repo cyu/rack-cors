@@ -84,7 +84,7 @@ See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) 
 
 #### Middleware Options
 * **debug** (boolean):  Enables debug logging and `X-Rack-CORS` HTTP headers for debugging.
-* **logger** (Object or Proc): Specify the logger to log to.  If a proc is provided, it will be called when a logger is needed (this is helpful in cases where the logger is initialized after `Rack::Cors` is used, like `Rails.logger`.
+* **logger** (Object or Proc): Specify the logger to log to.  If a proc is provided, it will be called when a logger is needed (this is helpful in cases where the logger is initialized after `Rack::Cors` is used), like `Rails.logger`.
 
 #### Origin
 Origins can be specified as a string, a regular expression**, or as '*' to allow all origins.
