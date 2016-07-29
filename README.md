@@ -84,7 +84,7 @@ See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) 
 
 #### Middleware Options
 * **debug** (boolean):  Enables debug logging and `X-Rack-CORS` HTTP headers for debugging.
-* **logger** (Object or Proc): Specify the logger to log to.  If a proc is provided, it will be called when a logger is needed (this is helpful in cases where the logger is initialized after `Rack::Cors` is used, like `Rails.logger`.
+* **logger** (Object or Proc): Specify the logger to log to.  If a proc is provided, it will be called when a logger is needed.  This is helpful in cases where the logger is initialized after `Rack::Cors` is initially configured, like `Rails.logger`.
 
 #### Origin
 Origins can be specified as a string, a regular expression**, or as '*' to allow all origins.
@@ -97,7 +97,7 @@ Additionally, origins can be specified dynamically via a block of the following 
 ```
 
 #### Resource
-A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '\*' wildcard (`/all/files/in/*`).  A resource that take the following options:
+A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '\*' wildcard (`/all/files/in/*`).  A resource can take the following options:
 
 * **methods** (string or array or `:any`): The HTTP methods allowed for the resource.
 * **headers** (string or array or `:any`): The HTTP headers that will be allowed in the CORS resource request.  Use `:any` to allow for any headers in the actual request.
