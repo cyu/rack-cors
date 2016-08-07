@@ -3,12 +3,13 @@ require 'rack/test'
 require 'mocha/setup'
 require 'rack/cors'
 require 'ostruct'
-require 'pry'
 
 Rack::Test::Session.class_eval do
-  def options(uri, params = {}, env = {}, &block)
-    env = env_for(uri, env.merge(:method => "OPTIONS", :params => params))
-    process_request(uri, env, &block)
+  unless defined? :options
+    def options(uri, params = {}, env = {}, &block)
+      env = env_for(uri, env.merge(:method => "OPTIONS", :params => params))
+      process_request(uri, env, &block)
+    end
   end
 end
 

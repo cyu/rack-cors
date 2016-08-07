@@ -13,6 +13,7 @@ module Rack
     def initialize(app, opts={}, &block)
       @app = app
       @debug_mode = !!opts[:debug]
+      @logger = @logger_proc = nil
 
       if logger = opts[:logger]
         if logger.respond_to? :call
