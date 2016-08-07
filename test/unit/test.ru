@@ -4,7 +4,11 @@ require 'rack/cors'
 use Rack::Lint
 use Rack::Cors do
   allow do
-    origins 'localhost:3000', '127.0.0.1:3000', /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/, 'file://'
+    origins 'localhost:3000',
+            '127.0.0.1:3000',
+            /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/,
+            'file://',
+            /http:\/\/(.*?)\.example\.com/
 
     resource '/get-only', :methods => :get
     resource '/', :headers => :any, :methods => :any

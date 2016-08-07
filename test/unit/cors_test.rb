@@ -56,6 +56,10 @@ describe Rack::Cors do
     cors_request :origin => 'http://192.168.0.1:1234'
   end
 
+  it 'should support subdomain example' do
+    cors_request :origin => 'http://subdomain.example.com'
+  end
+
   it 'should support proc origins configuration' do
     cors_request '/proc-origin', :origin => 'http://10.10.10.10:3000'
   end
