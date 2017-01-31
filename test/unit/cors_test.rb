@@ -64,6 +64,12 @@ describe Rack::Cors do
     cors_request '/proc-origin', :origin => 'http://10.10.10.10:3000'
   end
 
+  it 'should not mix up path rules across origins' do
+    header 'Origin', 'http://10.10.10.10:3000'
+    get '/' # / is configured in a separate rule block
+    should_render_cors_failure
+  end
+
   it 'should support alternative X-Origin header' do
     header 'X-Origin', 'http://localhost:3000'
     get '/'
