@@ -240,7 +240,7 @@ module Rack
             preflight? ? 'preflight-hit' : 'hit'
           else
             [
-              (preflight? ? 'preflight-miss' : 'preflight-hit'),
+              (preflight? ? 'preflight-miss' : 'miss'),
               miss_reason
             ].join('; ')
           end
