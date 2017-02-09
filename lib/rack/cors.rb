@@ -278,13 +278,11 @@ module Rack
         def allow_origin?(source,env = {})
           return true if public_resources?
 
-          effective_source = (source == 'null' ? 'file://' : source)
-
           return !! @origins.detect do |origin|
             if origin.is_a?(Proc)
               origin.call(source,env)
             else
-              origin === effective_source
+              origin === source
             end
           end
         end
@@ -323,7 +321,7 @@ module Rack
           else
             ensure_enum(opts[:methods]) || [:get]
           end.map{|e| e.to_s }
-          
+
           self.expose = opts[:expose] ? [opts[:expose]].flatten : nil
         end
 
