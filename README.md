@@ -28,15 +28,6 @@ module YourApp
 
     # ...
     
-    # Rails 3/4
-
-    config.middleware.insert_before 0, "Rack::Cors" do
-      allow do
-        origins '*'
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
-      end
-    end
-    
     # Rails 5
 
     config.middleware.insert_before 0, Rack::Cors do
@@ -46,10 +37,20 @@ module YourApp
       end
     end
 
+    # Rails 3/4
+
+    config.middleware.insert_before 0, "Rack::Cors" do
+      allow do
+        origins '*'
+        resource '*', :headers => :any, :methods => [:get, :post, :options]
+      end
+    end
+    
   end
 end
 ```
-Refer to [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails3) and [rails 4 example](https://github.com/cyu/rack-cors/tree/master/examples/rails4) for more details.
+
+We use `insert_before` to make sure `Rack::Cors` runs at the beginning of the stack to make sure it isn't interfered with with other middleware (see `Rack::Cache` note in **Common Gotchas** section). Check out the [rails 4 example](https://github.com/cyu/rack-cors/tree/master/examples/rails4) and [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails3).
 
 See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware).
 
