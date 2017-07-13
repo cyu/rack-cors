@@ -247,7 +247,7 @@ describe Rack::Cors do
     it 'should * origin should allow any origin' do
       preflight_request('http://locohost:3000', '/public')
       should_render_cors_success
-      last_response.headers['Access-Control-Allow-Origin'].must_equal 'http://locohost:3000'
+      last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     end
 
     it 'should * origin should allow any origin, and set * if no credentials required' do
@@ -314,7 +314,7 @@ describe Rack::Cors do
 
     it "should return original headers if in debug" do
       cors_request origin: "http://example.net"
-      last_response.headers['X-Rack-CORS-Original-Access-Control-Allow-Origin'].must_equal "http://example.net"
+      last_response.headers['X-Rack-CORS-Original-Access-Control-Allow-Origin'].must_equal "*"
     end
   end
 
