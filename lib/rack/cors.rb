@@ -298,12 +298,18 @@ module Rack
       end
 
       class Resource
-        class CorsMisconfiguartionError < StandardError; end
+        class CorsMisconfigurationError < StandardError
+          def message
+            "Allowing credentials for wildcard origins is insecure."\
+            " Please specify more restrictive origins or set 'credentials' to false in your CORS configuration."
+          end
+        end
 
         attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern, :if_proc, :vary_headers
 
         def initialize(public_resource, path, opts={})
-          raise CorsMisconfiguartionError if public_resource && opts[:credentials]
+          raise CorsMisconfigurationError if public_resource && opts[:credentials]
+
           self.path         = path
           self.credentials  = opts[:credentials].nil? ? !public_resource : opts[:credentials]
           self.max_age      = opts[:max_age] || 1728000
