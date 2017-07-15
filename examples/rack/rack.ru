@@ -8,7 +8,6 @@ app = Rack::Builder.app do
       resource '/cors',
         :headers => :any,
         :methods => [:post],
-        :credentials => true,
         :max_age => 0
 
       resource '*',

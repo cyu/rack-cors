@@ -27,7 +27,6 @@ module Rails4
         resource '/cors',
           :headers => :any,
           :methods => [:post],
-          :credentials => true,
           :max_age => 0
 
         resource '*',
