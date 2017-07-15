@@ -323,7 +323,7 @@ module Rack
         attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern, :if_proc, :vary_headers
 
         def initialize(public_resource, path, opts={})
-          raise CorsMisconfigurationError if public_resource && opts[:credentials]
+          raise CorsMisconfigurationError if public_resource && opts[:credentials] == true
 
           self.path         = path
           self.credentials  = public_resource ? false : (opts[:credentials] == true)
