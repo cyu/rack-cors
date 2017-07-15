@@ -1,4 +1,4 @@
-CORS_SERVER = 'cors-server:3000'
+CORS_SERVER = '127.0.0.1.xip.io:9292'
 
 describe 'CORS', ->
 
