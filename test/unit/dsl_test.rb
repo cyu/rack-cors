@@ -55,4 +55,15 @@ describe Rack::Cors, 'DSL' do
 
     resources.first.allow_origin?('file://').must_equal true
   end
+
+  it 'should default credentials option to false' do
+    cors = Rack::Cors.new(Proc.new {}) do
+      allow do
+        origins 'example.net'
+        resource '/', :headers => :any
+      end
+    end
+    resources = cors.send :all_resources
+    resources.first.resources.first.credentials.must_equal false
+  end
 end

@@ -10,6 +10,8 @@ module Rack
     VARY_HEADER_KEY       = 'Vary'.freeze
     DEFAULT_VARY_HEADERS  = ['Origin'].freeze
 
+    RACK_LOGGER = 'rack.logger'.freeze
+
     def initialize(app, opts={}, &block)
       @app = app
       @debug_mode = !!opts[:debug]
@@ -125,8 +127,8 @@ module Rack
         elsif defined?(Rails) && Rails.logger
           Rails.logger
 
-        elsif env['rack.logger']
-          env['rack.logger']
+        elsif env[RACK_LOGGER]
+          env[RACK_LOGGER]
 
         else
           ::Logger.new(STDOUT).tap { |logger| logger.level = ::Logger::Severity::DEBUG }
@@ -248,6 +250,9 @@ module Rack
       end
 
       class Resources
+
+        attr_reader :resources
+
         def initialize
           @origins = []
           @resources = []
@@ -311,7 +316,7 @@ module Rack
           raise CorsMisconfigurationError if public_resource && opts[:credentials]
 
           self.path         = path
-          self.credentials  = opts[:credentials].nil? ? !public_resource : opts[:credentials]
+          self.credentials  = public_resource ? false : (opts[:credentials] == true)
           self.max_age      = opts[:max_age] || 1728000
           self.pattern      = compile(path)
           self.if_proc      = opts[:if]
