@@ -255,7 +255,7 @@ module Rack
         end
 
         def origins(*args, &blk)
-          @origins = args.flatten.collect do |n|
+          @origins = args.flatten.reject{ |s| s == '' }.map do |n|
             case n
             when Regexp,
                  /^https?:\/\//,

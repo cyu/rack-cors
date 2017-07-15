@@ -47,4 +47,9 @@ use Rack::Cors do
     origins '*'
     resource '/multi-allow-config', :max_age => 300, :credentials => false
   end
+
+  allow do
+    origins ''
+    resource '/blank-origin'
+  end
 end
