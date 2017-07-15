@@ -136,6 +136,11 @@ describe Rack::Cors do
     cors_request '/conditional', :origin => 'http://192.168.0.1:1234'
   end
 
+  it "should not allow credentials for public resources" do
+    cors_request '/public'
+    last_response.headers['Access-Control-Allow-Credentials'].must_be_nil
+  end
+
  describe 'logging' do
     it 'should not log debug messages if debug option is false' do
       app = mock
@@ -247,7 +252,7 @@ describe Rack::Cors do
     it 'should * origin should allow any origin' do
       preflight_request('http://locohost:3000', '/public')
       should_render_cors_success
-      last_response.headers['Access-Control-Allow-Origin'].must_equal 'http://locohost:3000'
+      last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     end
 
     it 'should * origin should allow any origin, and set * if no credentials required' do
@@ -266,6 +271,14 @@ describe Rack::Cors do
       preflight_request('http://localhost:3000', '/')
       should_render_cors_success
       last_response.headers['Content-Type'].wont_be_nil
+    end
+  end
+
+  describe "with insecure configuration" do
+    let(:app) { load_app('insecure') }
+
+    it "should raise an error" do
+      proc { cors_request '/public' }.must_raise Rack::Cors::Resource::CorsMisconfigurationError
     end
   end
 
@@ -314,7 +327,7 @@ describe Rack::Cors do
 
     it "should return original headers if in debug" do
       cors_request origin: "http://example.net"
-      last_response.headers['X-Rack-CORS-Original-Access-Control-Allow-Origin'].must_equal "http://example.net"
+      last_response.headers['X-Rack-CORS-Original-Access-Control-Allow-Origin'].must_equal "*"
     end
   end
 
