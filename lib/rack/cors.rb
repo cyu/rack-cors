@@ -2,15 +2,26 @@ require 'logger'
 
 module Rack
   class Cors
-    ENV_KEY = 'rack.cors'.freeze
+    HTTP_ORIGIN   = 'HTTP_ORIGIN'.freeze
+    HTTP_X_ORIGIN = 'HTTP_X_ORIGIN'.freeze
 
-    ORIGIN_HEADER_KEY     = 'HTTP_ORIGIN'.freeze
-    ORIGIN_X_HEADER_KEY   = 'HTTP_X_ORIGIN'.freeze
-    PATH_INFO_HEADER_KEY  = 'PATH_INFO'.freeze
-    VARY_HEADER_KEY       = 'Vary'.freeze
-    DEFAULT_VARY_HEADERS  = ['Origin'].freeze
+    HTTP_ACCESS_CONTROL_REQUEST_METHOD  = 'HTTP_ACCESS_CONTROL_REQUEST_METHOD'.freeze
+    HTTP_ACCESS_CONTROL_REQUEST_HEADERS = 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS'.freeze
+
+    PATH_INFO      = 'PATH_INFO'.freeze
+    REQUEST_METHOD = 'REQUEST_METHOD'.freeze
 
     RACK_LOGGER = 'rack.logger'.freeze
+    RACK_CORS   =
+    # retaining the old key for backwards compatibility
+    ENV_KEY     = 'rack.cors'.freeze
+
+    OPTIONS      = 'OPTIONS'.freeze
+    VARY         = 'Vary'.freeze
+    CONTENT_TYPE = 'Content-Type'.freeze
+    TEXT_PLAIN   = 'text/plain'.freeze
+
+    DEFAULT_VARY_HEADERS = ['Origin'].freeze
 
     def initialize(app, opts={}, &block)
       @app = app
@@ -49,25 +60,24 @@ module Rack
     end
 
     def call(env)
-      env[ORIGIN_HEADER_KEY] ||= env[ORIGIN_X_HEADER_KEY] if env[ORIGIN_X_HEADER_KEY]
+      env[HTTP_ORIGIN] ||= env[HTTP_X_ORIGIN] if env[HTTP_X_ORIGIN]
 
       add_headers = nil
-      if env[ORIGIN_HEADER_KEY]
+      if env[HTTP_ORIGIN]
         debug(env) do
           [ 'Incoming Headers:',
-            "  Origin: #{env[ORIGIN_HEADER_KEY]}",
-            "  Access-Control-Request-Method: #{env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']}",
-            "  Access-Control-Request-Headers: #{env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}"
+            "  Origin: #{env[HTTP_ORIGIN]}",
+            "  Access-Control-Request-Method: #{env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]}",
+            "  Access-Control-Request-Headers: #{env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS]}"
             ].join("\n")
         end
-        if env['REQUEST_METHOD'] == 'OPTIONS' and env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
-          if headers = process_preflight(env)
-            debug(env) do
-              "Preflight Headers:\n" +
-                  headers.collect{|kv| "  #{kv.join(': ')}"}.join("\n")
-            end
-            return [200, headers, []]
+        if env[REQUEST_METHOD] == OPTIONS and env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]
+          headers = process_preflight(env)
+          debug(env) do
+            "Preflight Headers:\n" +
+                headers.collect{|kv| "  #{kv.join(': ')}"}.join("\n")
           end
+          return [200, headers, []]
         else
           add_headers = process_cors(env)
         end
@@ -76,9 +86,9 @@ module Rack
       end
 
       # This call must be done BEFORE calling the app because for some reason
-      # env[PATH_INFO_HEADER_KEY] gets changed after that and it won't match.
-      # (At least in rails 4.1.6)
-      vary_resource = resource_for_path(env[PATH_INFO_HEADER_KEY])
+      # env[PATH_INFO] gets changed after that and it won't match. (At least
+      # in rails 4.1.6)
+      vary_resource = resource_for_path(env[PATH_INFO])
 
       status, headers, body = @app.call env
 
@@ -97,16 +107,16 @@ module Rack
       # response to be different depending on the Origin header value.
       # Better explained here: http://www.fastly.com/blog/best-practices-for-using-the-vary-header/
       if vary_resource
-        vary = headers[VARY_HEADER_KEY]
+        vary = headers[VARY]
         cors_vary_headers = if vary_resource.vary_headers && vary_resource.vary_headers.any?
           vary_resource.vary_headers
         else
           DEFAULT_VARY_HEADERS
         end
-        headers[VARY_HEADER_KEY] = ((vary ? vary.split(/,\s*/) : []) + cors_vary_headers).uniq.join(', ')
+        headers[VARY] = ((vary ? vary.split(/,\s*/) : []) + cors_vary_headers).uniq.join(', ')
       end
 
-      if debug? && result = env[ENV_KEY]
+      if debug? && result = env[RACK_CORS]
         result.append_header(headers)
       end
 
@@ -140,16 +150,15 @@ module Rack
       end
 
       def process_preflight(env)
-        resource, error = match_resource(env)
-        if resource
-          Result.preflight_hit(env)
-          preflight = resource.process_preflight(env)
-          preflight
+        result = Result.preflight(env)
 
-        else
-          Result.preflight_miss(env, error)
-          nil
+        resource, error = match_resource(env)
+        unless resource
+          result.miss(error)
+          return {} 
         end
+
+        return resource.process_preflight(env, result)
       end
 
       def process_cors(env)
@@ -175,8 +184,8 @@ module Rack
       end
 
       def match_resource(env)
-        path   = env[PATH_INFO_HEADER_KEY]
-        origin = env[ORIGIN_HEADER_KEY]
+        path   = env[PATH_INFO]
+        origin = env[HTTP_ORIGIN]
 
         origin_matched = false
         all_resources.each do |r|
@@ -197,6 +206,10 @@ module Rack
         MISS_NO_ORIGIN = 'no-origin'.freeze
         MISS_NO_PATH   = 'no-path'.freeze
 
+        MISS_NO_METHOD   = 'no-method'.freeze
+        MISS_DENY_METHOD = 'deny-method'.freeze
+        MISS_DENY_HEADER = 'deny-header'.freeze
+
         attr_accessor :preflight, :hit, :miss_reason
 
         def hit?
@@ -207,11 +220,16 @@ module Rack
           !!preflight
         end
 
+        def miss(reason)
+          self.hit = false
+          self.miss_reason = reason
+        end
+
         def self.hit(env)
           r = Result.new
           r.preflight = false
           r.hit = true
-          env[ENV_KEY] = r
+          env[RACK_CORS] = r
         end
 
         def self.miss(env, reason)
@@ -219,23 +237,15 @@ module Rack
           r.preflight = false
           r.hit = false
           r.miss_reason = reason
-          env[ENV_KEY] = r
+          env[RACK_CORS] = r
         end
 
-        def self.preflight_hit(env)
+        def self.preflight(env)
           r = Result.new
           r.preflight = true
-          r.hit = true
-          env[ENV_KEY] = r
+          env[RACK_CORS] = r
         end
 
-        def self.preflight_miss(env, reason)
-          r = Result.new
-          r.preflight = true
-          r.hit = false
-          r.miss_reason = reason
-          env[ENV_KEY] = r
-        end
 
         def append_header(headers)
           headers[HEADER_KEY] = if hit?
@@ -347,14 +357,29 @@ module Rack
           matches_path?(path) && (if_proc.nil? || if_proc.call(env))
         end
 
-        def process_preflight(env)
-          return nil if invalid_method_request?(env) || invalid_headers_request?(env)
-          {'Content-Type' => 'text/plain'}.merge(to_preflight_headers(env))
+        def process_preflight(env, result)
+          headers = {CONTENT_TYPE => TEXT_PLAIN}
+
+          request_method = env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]
+          if request_method.nil?
+            result.miss(Result::MISS_NO_METHOD) and return headers
+          end
+          if !methods.include?(request_method.downcase)
+            result.miss(Result::MISS_DENY_METHOD) and return headers
+          end
+
+          request_headers = env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS]
+          if request_headers && !allow_headers?(request_headers)
+            result.miss(Result::MISS_DENY_HEADER) and return headers
+          end
+
+          result.hit = true
+          headers.merge(to_preflight_headers(env))
         end
 
         def to_headers(env)
           h = {
-            'Access-Control-Allow-Origin'     => origin_for_response_header(env[ORIGIN_HEADER_KEY]),
+            'Access-Control-Allow-Origin'     => origin_for_response_header(env[HTTP_ORIGIN]),
             'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
             'Access-Control-Expose-Headers'   => expose.nil? ? '' : expose.join(', '),
             'Access-Control-Max-Age'          => max_age.to_s }
@@ -374,20 +399,10 @@ module Rack
 
           def to_preflight_headers(env)
             h = to_headers(env)
-            if env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
-              h.merge!('Access-Control-Allow-Headers' => env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
+            if env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS]
+              h.merge!('Access-Control-Allow-Headers' => env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS])
             end
             h
-          end
-
-          def invalid_method_request?(env)
-            request_method = env['HTTP_ACCESS_CONTROL_REQUEST_METHOD']
-            request_method.nil? || !methods.include?(request_method.downcase)
-          end
-
-          def invalid_headers_request?(env)
-            request_headers = env['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
-            request_headers && !allow_headers?(request_headers)
           end
 
           def allow_headers?(request_headers)

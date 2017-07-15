@@ -27,6 +27,19 @@ module MiniTest::Assertions
   end
 end
 
+class CaptureResult
+  def initialize(app, options =  {})
+    @app = app
+    @result_holder = options[:holder]
+  end
+
+  def call(env)
+    response = @app.call(env)
+    @result_holder.cors_result = env[Rack::Cors::RACK_CORS]
+    return response
+  end
+end
+
 Rack::MockResponse.infect_an_assertion :assert_cors_success, :must_render_cors_success, :only_one_argument
 Rack::MockResponse.infect_an_assertion :assert_not_cors_success, :wont_render_cors_success, :only_one_argument
 
@@ -38,10 +51,10 @@ describe Rack::Cors do
   def load_app(name)
     test = self
     Rack::Builder.new do
+      use CaptureResult, :holder => test
       eval File.read(File.dirname(__FILE__) + "/#{name}.ru")
       map('/') do
         run proc { |env|
-          test.cors_result = env[Rack::Cors::ENV_KEY]
           [200, {'Content-Type' => 'text/html'}, ['success']]
         }
       end
@@ -235,11 +248,17 @@ describe Rack::Cors do
     it 'should fail if Access-Control-Request-Method is not allowed' do
       preflight_request('http://localhost:3000', '/get-only', :method => :post)
       last_response.wont_render_cors_success
+      cors_result.miss_reason.must_equal Rack::Cors::Result::MISS_DENY_METHOD
+      cors_result.wont_be :hit
+      cors_result.must_be :preflight
     end
 
     it 'should fail if header is not allowed' do
       preflight_request('http://localhost:3000', '/single_header', :headers => 'Fooey')
       last_response.wont_render_cors_success
+      cors_result.miss_reason.must_equal Rack::Cors::Result::MISS_DENY_HEADER
+      cors_result.wont_be :hit
+      cors_result.must_be :preflight
     end
 
     it 'should allow any header if headers = :any' do
@@ -289,6 +308,34 @@ describe Rack::Cors do
       preflight_request('http://localhost:3000', '/')
       last_response.must_render_cors_success
       last_response.headers['Content-Type'].wont_be_nil
+    end
+
+    describe '' do
+
+      let(:app) do
+        test = self
+        Rack::Builder.new do
+          use CaptureResult, holder: test
+          use Rack::Cors, debug: true, logger: Logger.new(StringIO.new) do
+            allow do
+              origins '*'
+              resource '/', :methods => :post
+            end
+          end
+          map('/') do
+            run ->(env) { [500, {'Content-Type' => 'text/plain'}, ['FAIL!']] }
+          end
+        end
+      end
+
+      it "should not send failed preflight requests thru the app" do
+        preflight_request('http://localhost', '/', :method => :unsupported)
+        last_response.wont_render_cors_success
+        last_response.status.must_equal 200
+        cors_result.must_be :preflight
+        cors_result.wont_be :hit
+        cors_result.miss_reason.must_equal Rack::Cors::Result::MISS_DENY_METHOD
+      end
     end
   end
 
