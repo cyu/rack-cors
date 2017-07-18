@@ -272,7 +272,8 @@ module Rack
         def origins(*args, &blk)
           @origins = args.flatten.reject{ |s| s == '' }.map do |n|
             case n
-            when Regexp,
+            when Proc,
+                 Regexp,
                  /^https?:\/\//,
                  'file://'        then n
             when '*'              then @public_resources = true; n

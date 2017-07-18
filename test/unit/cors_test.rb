@@ -90,6 +90,15 @@ describe Rack::Cors do
     successful_cors_request '/proc-origin', :origin => 'http://10.10.10.10:3000'
   end
 
+  it 'should support lambda origin configuration' do
+    successful_cors_request '/lambda-origin', :origin => 'http://10.10.10.10:3000'
+  end
+
+  it 'should support proc origins configuration (inverse)' do
+    cors_request '/proc-origin', :origin => 'http://bad.guy'
+    last_response.wont_render_cors_success
+  end
+
   it 'should not mix up path rules across origins' do
     header 'Origin', 'http://10.10.10.10:3000'
     get '/' # / is configured in a separate rule block

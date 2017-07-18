@@ -33,6 +33,11 @@ use Rack::Cors do
   end
 
   allow do
+    origins -> (source, env) { source.end_with?("10.10.10.10:3000") }
+    resource '/lambda-origin'
+  end
+
+  allow do
     origins '*'
     resource '/public'
     resource '/public_without_credentials', :credentials => false
