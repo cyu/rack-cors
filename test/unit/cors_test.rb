@@ -1,7 +1,6 @@
-require 'minitest/autorun'
+require_relative 'test_helper'
 require 'rack/test'
 require 'mocha/setup'
-require 'rack/cors'
 require 'ostruct'
 
 Rack::Test::Session.class_eval do
@@ -16,7 +15,7 @@ end
 Rack::Test::Methods.class_eval do
   def_delegator :current_session, :options
 end
-  
+
 module MiniTest::Assertions
   def assert_cors_success(response)
   	assert !response.headers['Access-Control-Allow-Origin'].nil?, "Expected a successful CORS response"
@@ -107,6 +106,13 @@ describe Rack::Cors do
 
   it 'should support alternative X-Origin header' do
     header 'X-Origin', 'http://localhost:3000'
+    get '/'
+    last_response.must_render_cors_success
+  end
+
+  it 'should support cloudflare X-Forwarded-For header' do
+    header 'X-Forwarded-For', 'http://localhost:3000'
+    header 'Origin', 'http://cloudflare.ip'
     get '/'
     last_response.must_render_cors_success
   end
