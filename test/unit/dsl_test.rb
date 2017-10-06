@@ -1,7 +1,5 @@
 require 'rubygems'
-require 'minitest/autorun'
-require 'rack/cors'
-
+require_relative 'test_helper'
 
 describe Rack::Cors, 'DSL' do
   it 'should support explicit config object dsl mode' do

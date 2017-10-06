@@ -2,8 +2,9 @@ require 'logger'
 
 module Rack
   class Cors
-    HTTP_ORIGIN   = 'HTTP_ORIGIN'.freeze
-    HTTP_X_ORIGIN = 'HTTP_X_ORIGIN'.freeze
+    HTTP_ORIGIN           = 'HTTP_ORIGIN'.freeze
+    HTTP_X_ORIGIN         = 'HTTP_X_ORIGIN'.freeze
+    HTTP_X_FORWARDED_FOR  = 'HTTP_X_FORWARDED_FOR'.freeze
 
     HTTP_ACCESS_CONTROL_REQUEST_METHOD  = 'HTTP_ACCESS_CONTROL_REQUEST_METHOD'.freeze
     HTTP_ACCESS_CONTROL_REQUEST_HEADERS = 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS'.freeze
@@ -60,7 +61,8 @@ module Rack
     end
 
     def call(env)
-      env[HTTP_ORIGIN] ||= env[HTTP_X_ORIGIN] if env[HTTP_X_ORIGIN]
+      real_origin = env[HTTP_X_FORWARDED_FOR] || env[HTTP_X_ORIGIN]
+      env[HTTP_ORIGIN] = real_origin if real_origin
 
       add_headers = nil
       if env[HTTP_ORIGIN]
@@ -155,7 +157,7 @@ module Rack
         resource, error = match_resource(env)
         unless resource
           result.miss(error)
-          return {} 
+          return {}
         end
 
         return resource.process_preflight(env, result)
