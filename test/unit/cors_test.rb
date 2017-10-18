@@ -16,7 +16,7 @@ end
 Rack::Test::Methods.class_eval do
   def_delegator :current_session, :options
 end
-  
+
 module MiniTest::Assertions
   def assert_cors_success(response)
   	assert !response.headers['Access-Control-Allow-Origin'].nil?, "Expected a successful CORS response"
@@ -402,6 +402,33 @@ describe Rack::Cors do
     it "should return original headers if in debug" do
       successful_cors_request origin: "http://example.net"
       last_response.headers['X-Rack-CORS-Original-Access-Control-Allow-Origin'].must_equal "*"
+    end
+  end
+
+  describe 'with custom allowed headers' do
+    let(:app) do
+      Rack::Builder.new do
+        use Rack::Cors, debug: true, logger: Logger.new(StringIO.new) do
+          allow do
+            origins '*'
+            resource '/', headers: []
+          end
+        end
+        map('/') do
+          run ->(env) { [200, {'Content-Type' => 'text/html'}, ['hello']] }
+        end
+      end
+    end
+
+    it 'should succeed with CORS simple headers' do
+      preflight_request('http://localhost:3000', '/', :headers => 'Accept')
+      last_response.must_render_cors_success
+      preflight_request('http://localhost:3000', '/', :headers => 'Accept-Language')
+      last_response.must_render_cors_success
+      preflight_request('http://localhost:3000', '/', :headers => 'Content-Type')
+      last_response.must_render_cors_success
+      preflight_request('http://localhost:3000', '/', :headers => 'Content-Language')
+      last_response.must_render_cors_success
     end
   end
 
