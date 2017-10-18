@@ -23,6 +23,10 @@ module Rack
 
     DEFAULT_VARY_HEADERS = ['Origin'].freeze
 
+    # All CORS routes need to accept CORS simple headers at all times
+    # {https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers}
+    CORS_SIMPLE_HEADERS = ['accept', 'accept-language', 'content-language', 'content-type'].freeze
+
     def initialize(app, opts={}, &block)
       @app = app
       @debug_mode = !!opts[:debug]
@@ -155,7 +159,7 @@ module Rack
         resource, error = match_resource(env)
         unless resource
           result.miss(error)
-          return {} 
+          return {}
         end
 
         return resource.process_preflight(env, result)
@@ -410,7 +414,10 @@ module Rack
             return false if headers.nil?
             headers == :any || begin
               request_headers = request_headers.split(/,\s*/) if request_headers.kind_of?(String)
-              request_headers.all?{|h| headers.include?(h.downcase)}
+              request_headers.all? do |header|
+                header = header.downcase
+                CORS_SIMPLE_HEADERS.include?(header) || headers.include?(header)
+              end
             end
           end
 
