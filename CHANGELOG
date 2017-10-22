@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.0.2 - 2017-10-22
+### Fixed
+- Automatically allow simple headers when headers are set
+
 ## 1.0.1 - 2017-07-18
 ### Fixed
 - Allow lambda origin configuration
