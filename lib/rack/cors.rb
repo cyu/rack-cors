@@ -138,7 +138,7 @@ module Rack
           @logger_proc = nil
           logger_proc.call
 
-        elsif defined?(Rails) && Rails.logger
+        elsif defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
           Rails.logger
 
         elsif env[RACK_LOGGER]
@@ -411,13 +411,14 @@ module Rack
           end
 
           def allow_headers?(request_headers)
-            return false if headers.nil?
-            headers == :any || begin
-              request_headers = request_headers.split(/,\s*/) if request_headers.kind_of?(String)
-              request_headers.all? do |header|
-                header = header.downcase
-                CORS_SIMPLE_HEADERS.include?(header) || headers.include?(header)
-              end
+            headers = self.headers || []
+            if headers == :any
+              return true
+            end
+            request_headers = request_headers.split(/,\s*/) if request_headers.kind_of?(String)
+            request_headers.all? do |header|
+              header = header.downcase
+              CORS_SIMPLE_HEADERS.include?(header) || headers.include?(header)
             end
           end
 

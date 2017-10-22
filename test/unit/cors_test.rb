@@ -405,10 +405,31 @@ describe Rack::Cors do
     end
   end
 
+  describe 'with headers set to nil' do
+    let(:app) do
+      Rack::Builder.new do
+        use Rack::Cors do
+          allow do
+            origins '*'
+            resource '/', headers: nil
+          end
+        end
+        map('/') do
+          run ->(env) { [200, {'Content-Type' => 'text/html'}, ['hello']] }
+        end
+      end
+    end
+
+    it 'should succeed with CORS simple headers' do
+      preflight_request('http://localhost:3000', '/', :headers => 'Accept')
+      last_response.must_render_cors_success
+    end
+  end
+
   describe 'with custom allowed headers' do
     let(:app) do
       Rack::Builder.new do
-        use Rack::Cors, debug: true, logger: Logger.new(StringIO.new) do
+        use Rack::Cors do
           allow do
             origins '*'
             resource '/', headers: []
