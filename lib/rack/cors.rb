@@ -278,8 +278,8 @@ module Rack
             case n
             when Proc,
                  Regexp,
-                 /^https?:\/\//,
                  'file://'        then n
+            when  /^https?:\/\//  then URI.parse(n).to_s
             when '*'              then @public_resources = true; n
             else                  Regexp.compile("^[a-z][a-z0-9.+-]*:\\\/\\\/#{Regexp.quote(n)}$")
             end

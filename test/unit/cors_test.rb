@@ -270,6 +270,13 @@ describe Rack::Cors do
       cors_result.must_be :preflight
     end
 
+    it 'should allow HTTP/HTTPS origin without the default port' do
+      preflight_request('http://allow-the-default-port.io', '/')
+      last_response.must_render_cors_success
+      preflight_request('https://allow-the-default-port.io', '/')
+      last_response.must_render_cors_success
+    end
+
     it 'should allow any header if headers = :any' do
       preflight_request('http://localhost:3000', '/', :headers => 'Fooey')
       last_response.must_render_cors_success

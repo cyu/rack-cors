@@ -8,7 +8,9 @@ use Rack::Cors do
             '127.0.0.1:3000',
             /http:\/\/192\.168\.0\.\d{1,3}(:\d+)?/,
             'file://',
-            /http:\/\/(.*?)\.example\.com/
+            /http:\/\/(.*?)\.example\.com/,
+            'http://allow-the-default-port.io:80',
+            'https://allow-the-default-port.io:443'
 
     resource '/get-only', :methods => :get
     resource '/', :headers => :any, :methods => :any
