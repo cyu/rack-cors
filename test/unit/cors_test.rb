@@ -19,11 +19,11 @@ end
 
 module MiniTest::Assertions
   def assert_cors_success(response)
-  	assert !response.headers['Access-Control-Allow-Origin'].nil?, "Expected a successful CORS response"
+    assert !response.headers['Access-Control-Allow-Origin'].nil?, "Expected a successful CORS response"
   end
 
   def assert_not_cors_success(response)
-  	assert response.headers['Access-Control-Allow-Origin'].nil?, "Expected a failed CORS response"
+    assert response.headers['Access-Control-Allow-Origin'].nil?, "Expected a failed CORS response"
   end
 end
 
@@ -243,6 +243,19 @@ describe Rack::Cors do
         cors = Rack::Cors.new(app, :debug => true) {}
         cors.call({'HTTP_ORIGIN' => 'test.com'})
       end
+    end
+
+    it 'should use Logger if none is set' do
+      app = mock
+      app.stubs(:call).returns([200, {}, ['']])
+
+      logger = mock
+      Logger.expects(:new).returns(logger)
+      logger.expects(:tap).returns(logger)
+      logger.expects(:debug)
+
+      cors = Rack::Cors.new(app, :debug => true) {}
+      cors.call({'HTTP_ORIGIN' => 'test.com'})
     end
   end
 
