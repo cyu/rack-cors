@@ -13,7 +13,7 @@ Install the gem:
 Or in your Gemfile:
 
 ```ruby
-gem 'rack-cors', :require => 'rack/cors'
+gem 'rack-cors', require: 'rack/cors'
 ```
 
 
@@ -25,7 +25,6 @@ Put something like the code below in `config/application.rb` of your Rails appli
 ```ruby
 module YourApp
   class Application < Rails::Application
-
     # ...
     
     # Rails 5
@@ -33,7 +32,7 @@ module YourApp
     config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins '*'
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
+        resource '*', headers: :any, methods: [:get, :post, :options]
       end
     end
 
@@ -42,10 +41,9 @@ module YourApp
     config.middleware.insert_before 0, "Rack::Cors" do
       allow do
         origins '*'
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
+        resource '*', headers: :any, methods: [:get, :post, :options]
       end
     end
-    
   end
 end
 ```
@@ -69,16 +67,16 @@ use Rack::Cors do
 
     resource '/file/list_all/', :headers => 'x-domain-token'
     resource '/file/at/*',
-        :methods => [:get, :post, :delete, :put, :patch, :options, :head],
-        :headers => 'x-domain-token',
-        :expose  => ['Some-Custom-Response-Header'],
-        :max_age => 600
+        method: [:get, :post, :delete, :put, :patch, :options, :head],
+        headers: 'x-domain-token',
+        expose: ['Some-Custom-Response-Header'],
+        max_age: 600
         # headers to expose
   end
 
   allow do
     origins '*'
-    resource '/public/*', :headers => :any, :methods => :get
+    resource '/public/*', headers: :any, methods: :get
   end
 end
 ```
