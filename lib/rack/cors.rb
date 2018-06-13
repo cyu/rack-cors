@@ -8,6 +8,8 @@ module Rack
     HTTP_ACCESS_CONTROL_REQUEST_METHOD  = 'HTTP_ACCESS_CONTROL_REQUEST_METHOD'.freeze
     HTTP_ACCESS_CONTROL_REQUEST_HEADERS = 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS'.freeze
 
+    HTTP_REGEX = 'https?:\/\/[^:^\/]*(?<port>:\d*)?.*?'.freeze
+
     PATH_INFO      = 'PATH_INFO'.freeze
     REQUEST_METHOD = 'REQUEST_METHOD'.freeze
 
@@ -273,15 +275,24 @@ module Rack
           @public_resources = false
         end
 
+        def parse_http(uri)
+          match_data = /#{HTTP_REGEX}/.match(uri)
+          case match_data['port']
+          when nil                               then uri
+          when ":#{URI.parse(uri).default_port}" then uri.sub(match_data['port'], '')
+          else                                   uri
+          end
+        end
+
         def origins(*args, &blk)
           @origins = args.flatten.reject{ |s| s == '' }.map do |n|
             case n
             when Proc,
                  Regexp,
-                 'file://'        then n
-            when  /^https?:\/\//  then URI.parse(n).to_s
-            when '*'              then @public_resources = true; n
-            else                  Regexp.compile("^[a-z][a-z0-9.+-]*:\\\/\\\/#{Regexp.quote(n)}$")
+                 'file://'         then n
+            when /#{HTTP_REGEX}/  then parse_http n
+            when '*'               then @public_resources = true; n
+            else                   Regexp.compile("^[a-z][a-z0-9.+-]*:\\\/\\\/#{Regexp.quote(n)}$")
             end
           end.flatten
           @origins.push(blk) if blk
