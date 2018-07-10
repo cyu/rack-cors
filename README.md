@@ -13,7 +13,7 @@ Install the gem:
 Or in your Gemfile:
 
 ```ruby
-gem 'rack-cors', require: 'rack/cors'
+gem 'rack-cors'
 ```
 
 
