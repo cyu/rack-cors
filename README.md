@@ -1,4 +1,5 @@
 # Rack CORS Middleware [![Build Status](https://travis-ci.org/cyu/rack-cors.svg?branch=master)](https://travis-ci.org/cyu/rack-cors)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcyu%2Frack-cors.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcyu%2Frack-cors?ref=badge_shield)
 
 `Rack::Cors` provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.
 
@@ -131,3 +132,7 @@ In many cases, the Rack stack will be different running in production environmen
 ```bash
 RAILS_ENV=production bundle exec rake middleware
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcyu%2Frack-cors.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcyu%2Frack-cors?ref=badge_large)
