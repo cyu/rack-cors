@@ -40,6 +40,18 @@ class CaptureResult
   end
 end
 
+class FakeProxy
+  def initialize(app, options =  {})
+    @app = app
+  end
+
+  def call(env)
+    status, headers, body = @app.call(env)
+    headers['Vary'] = %w(Origin User-Agent)
+    [status, headers, body]
+  end
+end
+
 Rack::MockResponse.infect_an_assertion :assert_cors_success, :must_render_cors_success, :only_one_argument
 Rack::MockResponse.infect_an_assertion :assert_not_cors_success, :wont_render_cors_success, :only_one_argument
 
@@ -48,11 +60,12 @@ describe Rack::Cors do
 
   attr_accessor :cors_result
 
-  def load_app(name)
+  def load_app(name, options = {})
     test = self
     Rack::Builder.new do
       use CaptureResult, :holder => test
       eval File.read(File.dirname(__FILE__) + "/#{name}.ru")
+      use FakeProxy if options[:proxy]
       map('/') do
         run proc { |env|
           [200, {'Content-Type' => 'text/html'}, ['success']]
@@ -131,6 +144,15 @@ describe Rack::Cors do
   it "should add Vary header based on :vary option" do
     successful_cors_request '/vary_test'
     last_response.headers['Vary'].must_equal 'Origin, Host'
+  end
+
+  describe 'with array of upstream Vary headers' do
+    let(:app) { load_app('test', { proxy: true }) }
+
+    it 'should add to them' do
+      successful_cors_request '/vary_test'
+      last_response.headers['Vary'].must_equal 'Origin, User-Agent, Host'
+    end
   end
 
   it 'should add Vary header if Access-Control-Allow-Origin header was added and if it is specific' do
