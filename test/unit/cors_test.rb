@@ -55,7 +55,7 @@ describe Rack::Cors do
       eval File.read(File.dirname(__FILE__) + "/#{name}.ru")
       map('/') do
         run proc { |env|
-          [200, {'Content-Type' => 'text/html'}, ['success']]
+          [200, {'Content-Type' => 'text/html'}.freeze, ['success'].freeze]
         }
       end
     end
