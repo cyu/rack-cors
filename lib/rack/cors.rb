@@ -117,7 +117,7 @@ module Rack
         else
           DEFAULT_VARY_HEADERS
         end
-        headers[VARY] = ((vary ? vary.split(/,\s*/) : []) + cors_vary_headers).uniq.join(', ')
+        headers = headers.merge(VARY => ((vary ? vary.split(/,\s*/) : []) + cors_vary_headers).uniq.join(', '))
       end
 
       if debug? && result = env[RACK_CORS]
