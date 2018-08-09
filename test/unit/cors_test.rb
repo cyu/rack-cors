@@ -315,6 +315,11 @@ describe Rack::Cors do
       last_response.must_render_cors_success
     end
 
+    it 'allows PATCH method' do
+      preflight_request('http://localhost:3000', '/', :methods => [ :patch ])
+      last_response.must_render_cors_success
+    end
+
     it 'should allow header case insensitive match' do
       preflight_request('http://localhost:3000', '/single_header', :headers => 'X-Domain-Token')
       last_response.must_render_cors_success

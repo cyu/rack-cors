@@ -12,6 +12,11 @@ describe 'CORS', ->
       expect(data).to.eql('Hello world')
       done()
 
+  it 'should allow PATCH access to dynamic resource', (done) ->
+    $.ajax("http://#{CORS_SERVER}/", type: 'PATCH').done (data, textStatus, jqXHR) ->
+      expect(data).to.eql('Hello world')
+      done()
+
   it 'should allow HEAD access to dynamic resource', (done) ->
     $.ajax("http://#{CORS_SERVER}/", type: 'HEAD').done (data, textStatus, jqXHR) ->
       expect(jqXHR.status).to.eql(200)
