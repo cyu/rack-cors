@@ -20,10 +20,22 @@ app = Rack::Builder.app do
   use Rack::Static, :urls => ["/static.txt"], :root => 'public'
 
   map "/cors" do
-    run lambda { |env| [ 200, {'Content-Type' => 'text/plain'}, ['OK!'] ] }
+    run lambda { |env|
+      [
+        200,
+        {'Content-Type' => 'text/plain'},
+        env[Rack::REQUEST_METHOD] == "HEAD" ? [] : ['OK!']
+      ]
+    }
   end
 
-  run lambda { |env| [ 200, {'Content-Type' => 'text/plain'}, ["Hello world"] ] }
+  run lambda { |env|
+    [
+      200,
+      {'Content-Type' => 'text/plain'},
+      env[Rack::REQUEST_METHOD] == "HEAD" ? [] : ["Hello world"]
+    ]
+  }
 end
 
 run app
