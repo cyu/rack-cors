@@ -353,12 +353,6 @@ describe Rack::Cors do
       last_response.headers['Access-Control-Allow-Origin'].must_equal 'file://'
     end
 
-    it 'should return a Content-Type' do
-      preflight_request('http://localhost:3000', '/')
-      last_response.must_render_cors_success
-      last_response.headers['Content-Type'].wont_be_nil
-    end
-
     describe '' do
 
       let(:app) do
@@ -372,7 +366,7 @@ describe Rack::Cors do
             end
           end
           map('/') do
-            run ->(env) { [500, {'Content-Type' => 'text/plain'}, ['FAIL!']] }
+            run ->(env) { [500, {}, ['FAIL!']] }
           end
         end
       end
@@ -429,7 +423,7 @@ describe Rack::Cors do
           end
         end
         map('/') do
-          run ->(env) { [200, {'Content-Type' => 'text/plain', 'Access-Control-Allow-Origin' => 'http://foo.net'}, ['success']] }
+          run ->(env) { [200, {'Access-Control-Allow-Origin' => 'http://foo.net'}, ['success']] }
         end
       end
     end

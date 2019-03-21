@@ -19,7 +19,6 @@ module Rack
     OPTIONS      = 'OPTIONS'.freeze
     VARY         = 'Vary'.freeze
     CONTENT_TYPE = 'Content-Type'.freeze
-    TEXT_PLAIN   = 'text/plain'.freeze
 
     DEFAULT_VARY_HEADERS = ['Origin'].freeze
 
@@ -363,7 +362,7 @@ module Rack
         end
 
         def process_preflight(env, result)
-          headers = {CONTENT_TYPE => TEXT_PLAIN}
+          headers = {}
 
           request_method = env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]
           if request_method.nil?
