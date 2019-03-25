@@ -16,9 +16,8 @@ module Rack
     # retaining the old key for backwards compatibility
     ENV_KEY     = 'rack.cors'.freeze
 
-    OPTIONS      = 'OPTIONS'.freeze
-    VARY         = 'Vary'.freeze
-    CONTENT_TYPE = 'Content-Type'.freeze
+    OPTIONS     = 'OPTIONS'.freeze
+    VARY        = 'Vary'.freeze
 
     DEFAULT_VARY_HEADERS = ['Origin'].freeze
 
