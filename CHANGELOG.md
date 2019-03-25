@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.0.3 - 2019-03-24
+### Changed
+- Don't send 'Content-Type' header with pre-flight requests
+- Allow ruby array for  vary header config
+
 ## 1.0.2 - 2017-10-22
 ### Fixed
 - Automatically allow simple headers when headers are set
