@@ -22,6 +22,8 @@ gem 'rack-cors'
 ### Rails Configuration
 For Rails, you'll need to add this middleware on application startup. A practical way to do this is with an initializer file. For example, the following will allow GET, POST, PATCH, or PUT requests from any origin on any resource:
 
+NOTE: If you create application with `--api` option, configuration automatically generate in `config/initializers/cors.rb`.
+
 ```ruby
 # config/initializers/cors.rb
 
