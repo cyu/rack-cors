@@ -22,6 +22,8 @@ gem 'rack-cors'
 ### Rails Configuration
 Put something like the code below in `config/application.rb` of your Rails application. For example, this will allow GET, POST or OPTIONS requests from any origin on any resource.
 
+NOTE: If you create application with `--api` option, configuration automatically generate in `config/initializers/cors.rb`.
+
 ```ruby
 module YourApp
   class Application < Rails::Application
