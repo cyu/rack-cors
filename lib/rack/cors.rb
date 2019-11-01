@@ -330,7 +330,7 @@ module Rack
 
           self.path         = path
           self.credentials  = public_resource ? false : (opts[:credentials] == true)
-          self.max_age      = opts[:max_age] || 1728000
+          self.max_age      = opts[:max_age] || 7200
           self.pattern      = compile(path)
           self.if_proc      = opts[:if]
           self.vary_headers = opts[:vary] && [opts[:vary]].flatten
