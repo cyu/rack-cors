@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.0.4 - 2019-11-13
+### Security
+- Escape and resolve path before evaluating resource rules (thanks to Colby Morgan)
+
 ## 1.0.3 - 2019-03-24
 ### Changed
 - Don't send 'Content-Type' header with pre-flight requests

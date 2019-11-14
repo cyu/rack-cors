@@ -146,6 +146,12 @@ describe Rack::Cors do
     last_response.headers['Vary'].must_equal 'Origin, Host'
   end
 
+  it "decode URL and resolve paths before resource matching" do
+    header 'Origin', 'http://localhost:3000'
+    get '/public/a/..%2F..%2Fprivate/stuff'
+    last_response.wont_render_cors_success
+  end
+
   describe 'with array of upstream Vary headers' do
     let(:app) { load_app('test', { proxy: true }) }
 
