@@ -152,7 +152,7 @@ module Rack
 
       def evaluate_path(env)
         path = env[PATH_INFO]
-        path = Rack::Utils.clean_path_info(Rack::Utils.unescape_path(path)) if path
+        path = Rack::Utils.clean_path_info(Rack::Utils.unescape(path)) if path
         path
       end
 
