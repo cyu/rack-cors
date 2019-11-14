@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.0.5 - 2019-11-14
+### Changed
+- Update Gem spec to require rack >= 1.6.0
+
 ## 1.0.4 - 2019-11-13
 ### Security
 - Escape and resolve path before evaluating resource rules (thanks to Colby Morgan)
