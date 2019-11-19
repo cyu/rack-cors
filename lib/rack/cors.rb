@@ -152,8 +152,16 @@ module Rack
 
       def evaluate_path(env)
         path = env[PATH_INFO]
-        path = Rack::Utils.clean_path_info(Rack::Utils.unescape(path)) if path
-        path
+
+        if path
+          path = Rack::Utils.unescape(path)
+
+          if Rack::Utils.valid_path?(path)
+            Rack::Utils.clean_path_info(Rack::Utils.unescape(path))
+          else
+            path
+          end
+        end
       end
 
       def all_resources
