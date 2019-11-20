@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Use Rack::Utils.escape_path instead of Rack::Utils.escape
 - Require Rack 2.0 for escape_path method
 - Don't try to clean path if invalid.
+- Return 400 (Bad Request) on preflights with invalid path
 
 ## 1.0.6 - 2019-11-14
 ### Changed
