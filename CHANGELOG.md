@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 - 2019-11-19
+### Changed
+- Use Rack::Utils.escape_path instead of Rack::Utils.escape
+- Require Rack 2.0 for escape_path method
+- Don't try to clean path if invalid.
+
 ## 1.0.6 - 2019-11-14
 ### Changed
 - Use Rack::Utils.escape to make compat with Rack 1.6.0
