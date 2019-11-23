@@ -2,14 +2,15 @@ GEM
   remote: https://rubygems.org/
   specs:
     rack (2.0.6)
-    rack-cors (1.0.2)
+    rack-cors (1.1.0)
+      rack (>= 2.0.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   rack
-  rack-cors
+  rack-cors (>= 1.1.0)
 
 BUNDLED WITH
-   1.16.3
+   1.17.3
