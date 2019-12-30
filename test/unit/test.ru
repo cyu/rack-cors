@@ -20,6 +20,7 @@ use Rack::Cors do
     resource '/conditional', :methods => :get, :if => proc { |env| !!env['HTTP_X_OK'] }
     resource '/vary_test', :methods => :get, :vary => %w{ Origin Host }
     resource '/patch_test', :methods => :patch
+    resource '/wildcard/*', :methods => :any
     # resource '/file/at/*',
     #     :methods => [:get, :post, :put, :delete],
     #     :headers => :any,

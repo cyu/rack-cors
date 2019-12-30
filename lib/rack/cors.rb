@@ -447,8 +447,10 @@ module Rack
             if path.respond_to? :to_str
               special_chars = %w{. + ( )}
               pattern =
-                path.to_str.gsub(/((:\w+)|[\*#{special_chars.join}])/) do |match|
+                path.to_str.gsub(/((:\w+)|\/\*|[\*#{special_chars.join}])/) do |match|
                   case match
+                  when "/*"
+                    "\\/?(.*?)"
                   when "*"
                     "(.*?)"
                   when *special_chars

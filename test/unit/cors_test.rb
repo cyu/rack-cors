@@ -341,13 +341,25 @@ describe Rack::Cors do
       last_response.must_render_cors_success
     end
 
-    it 'should * origin should allow any origin' do
+    it "should allow '*' origins to allow any origin" do
       preflight_request('http://locohost:3000', '/public')
       last_response.must_render_cors_success
       last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     end
 
-    it 'should * origin should allow any origin, and set * if no credentials required' do
+    it "should allow '/<path>/' resource if match pattern is /<path>/*" do
+      preflight_request('http://localhost:3000', '/wildcard/')
+      last_response.must_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].wont_equal nil
+    end
+
+    it "should allow '/<path>' resource if match pattern is /<path>/*" do
+      preflight_request('http://localhost:3000', '/wildcard')
+      last_response.must_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].wont_equal nil
+    end
+
+    it "should allow '*' origin to allow any origin, and set '*' if no credentials required" do
       preflight_request('http://locohost:3000', '/public_without_credentials')
       last_response.must_render_cors_success
       last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
