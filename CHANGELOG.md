@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 1.1.1 - 2019-12-29
+### Changed
+- Allow /<resource>/* to match /<resource>/ and /<resource> paths
+
 ## 1.1.0 - 2019-11-19
 ### Changed
 - Use Rack::Utils.escape_path instead of Rack::Utils.escape
