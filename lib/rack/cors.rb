@@ -1,4 +1,8 @@
 require 'logger'
+require_relative "cors/resources"
+require_relative "cors/resource"
+require_relative "cors/result"
+require_relative "cors/version"
 
 module Rack
   class Cors
@@ -123,7 +127,7 @@ module Rack
         headers[VARY] = ((vary ? ([vary].flatten.map { |v| v.split(/,\s*/) }.flatten) : []) + cors_vary_headers).uniq.join(', ')
       end
 
-      if debug? && result = env[RACK_CORS]
+      if debug? && result = env[ENV_KEY]
         result.append_header(headers)
       end
 
@@ -131,342 +135,94 @@ module Rack
     end
 
     protected
-      def debug(env, message = nil, &block)
-        (@logger || select_logger(env)).debug(message, &block) if debug?
+
+    def debug(env, message = nil, &block)
+      (@logger || select_logger(env)).debug(message, &block) if debug?
+    end
+
+    def select_logger(env)
+      @logger = if @logger_proc
+        logger_proc = @logger_proc
+        @logger_proc = nil
+        logger_proc.call
+
+      elsif defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+        Rails.logger
+
+      elsif env[RACK_LOGGER]
+        env[RACK_LOGGER]
+
+      else
+        ::Logger.new(STDOUT).tap { |logger| logger.level = ::Logger::Severity::DEBUG }
       end
+    end
 
-      def select_logger(env)
-        @logger = if @logger_proc
-          logger_proc = @logger_proc
-          @logger_proc = nil
-          logger_proc.call
+    def evaluate_path(env)
+      path = env[PATH_INFO]
 
-        elsif defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
-          Rails.logger
+      if path
+        path = Rack::Utils.unescape_path(path)
 
-        elsif env[RACK_LOGGER]
-          env[RACK_LOGGER]
-
-        else
-          ::Logger.new(STDOUT).tap { |logger| logger.level = ::Logger::Severity::DEBUG }
+        if Rack::Utils.valid_path?(path)
+          path = Rack::Utils.clean_path_info(path)
         end
       end
 
-      def evaluate_path(env)
-        path = env[PATH_INFO]
+      path
+    end
 
-        if path
-          path = Rack::Utils.unescape_path(path)
+    def all_resources
+      @all_resources ||= []
+    end
 
-          if Rack::Utils.valid_path?(path)
-            path = Rack::Utils.clean_path_info(path)
-          end
-        end
+    def process_preflight(env, path)
+      result = Result.preflight(env)
 
-        path
+      resource, error = match_resource(path, env)
+      unless resource
+        result.miss(error)
+        return {}
       end
 
-      def all_resources
-        @all_resources ||= []
-      end
+      return resource.process_preflight(env, result)
+    end
 
-      def process_preflight(env, path)
-        result = Result.preflight(env)
+    def process_cors(env, path)
+      resource, error = match_resource(path, env)
+      if resource
+        Result.hit(env)
+        cors = resource.to_headers(env)
+        cors
 
-        resource, error = match_resource(path, env)
-        unless resource
-          result.miss(error)
-          return {}
-        end
-
-        return resource.process_preflight(env, result)
-      end
-
-      def process_cors(env, path)
-        resource, error = match_resource(path, env)
-        if resource
-          Result.hit(env)
-          cors = resource.to_headers(env)
-          cors
-
-        else
-          Result.miss(env, error)
-          nil
-        end
-      end
-
-      def resource_for_path(path_info)
-        all_resources.each do |r|
-          if found = r.resource_for_path(path_info)
-            return found
-          end
-        end
+      else
+        Result.miss(env, error)
         nil
       end
+    end
 
-      def match_resource(path, env)
-        origin = env[HTTP_ORIGIN]
-
-        origin_matched = false
-        all_resources.each do |r|
-          if r.allow_origin?(origin, env)
-            origin_matched = true
-            if found = r.match_resource(path, env)
-              return [found, nil]
-            end
-          end
+    def resource_for_path(path_info)
+      all_resources.each do |r|
+        if found = r.resource_for_path(path_info)
+          return found
         end
-
-        [nil, origin_matched ? Result::MISS_NO_PATH : Result::MISS_NO_ORIGIN]
       end
+      nil
+    end
 
-      class Result
-        HEADER_KEY = 'X-Rack-CORS'.freeze
+    def match_resource(path, env)
+      origin = env[HTTP_ORIGIN]
 
-        MISS_NO_ORIGIN = 'no-origin'.freeze
-        MISS_NO_PATH   = 'no-path'.freeze
-
-        MISS_NO_METHOD   = 'no-method'.freeze
-        MISS_DENY_METHOD = 'deny-method'.freeze
-        MISS_DENY_HEADER = 'deny-header'.freeze
-
-        attr_accessor :preflight, :hit, :miss_reason
-
-        def hit?
-          !!hit
-        end
-
-        def preflight?
-          !!preflight
-        end
-
-        def miss(reason)
-          self.hit = false
-          self.miss_reason = reason
-        end
-
-        def self.hit(env)
-          r = Result.new
-          r.preflight = false
-          r.hit = true
-          env[RACK_CORS] = r
-        end
-
-        def self.miss(env, reason)
-          r = Result.new
-          r.preflight = false
-          r.hit = false
-          r.miss_reason = reason
-          env[RACK_CORS] = r
-        end
-
-        def self.preflight(env)
-          r = Result.new
-          r.preflight = true
-          env[RACK_CORS] = r
-        end
-
-
-        def append_header(headers)
-          headers[HEADER_KEY] = if hit?
-            preflight? ? 'preflight-hit' : 'hit'
-          else
-            [
-              (preflight? ? 'preflight-miss' : 'miss'),
-              miss_reason
-            ].join('; ')
+      origin_matched = false
+      all_resources.each do |r|
+        if r.allow_origin?(origin, env)
+          origin_matched = true
+          if found = r.match_resource(path, env)
+            return [found, nil]
           end
         end
       end
 
-      class Resources
-
-        attr_reader :resources
-
-        def initialize
-          @origins = []
-          @resources = []
-          @public_resources = false
-        end
-
-        def origins(*args, &blk)
-          @origins = args.flatten.reject{ |s| s == '' }.map do |n|
-            case n
-            when Proc,
-                 Regexp,
-                 /^https?:\/\//,
-                 'file://'        then n
-            when '*'              then @public_resources = true; n
-            else                  Regexp.compile("^[a-z][a-z0-9.+-]*:\\\/\\\/#{Regexp.quote(n)}$")
-            end
-          end.flatten
-          @origins.push(blk) if blk
-        end
-
-        def resource(path, opts={})
-          @resources << Resource.new(public_resources?, path, opts)
-        end
-
-        def public_resources?
-          @public_resources
-        end
-
-        def allow_origin?(source,env = {})
-          return true if public_resources?
-
-          return !! @origins.detect do |origin|
-            if origin.is_a?(Proc)
-              origin.call(source,env)
-            else
-              origin === source
-            end
-          end
-        end
-
-        def match_resource(path, env)
-          @resources.detect { |r| r.match?(path, env) }
-        end
-
-        def resource_for_path(path)
-          @resources.detect { |r| r.matches_path?(path) }
-        end
-
-      end
-
-      class Resource
-        class CorsMisconfigurationError < StandardError
-          def message
-            "Allowing credentials for wildcard origins is insecure."\
-            " Please specify more restrictive origins or set 'credentials' to false in your CORS configuration."
-          end
-        end
-
-        attr_accessor :path, :methods, :headers, :expose, :max_age, :credentials, :pattern, :if_proc, :vary_headers
-
-        def initialize(public_resource, path, opts={})
-          raise CorsMisconfigurationError if public_resource && opts[:credentials] == true
-
-          self.path         = path
-          self.credentials  = public_resource ? false : (opts[:credentials] == true)
-          self.max_age      = opts[:max_age] || 7200
-          self.pattern      = compile(path)
-          self.if_proc      = opts[:if]
-          self.vary_headers = opts[:vary] && [opts[:vary]].flatten
-          @public_resource  = public_resource
-
-          self.headers = case opts[:headers]
-          when :any then :any
-          when nil then nil
-          else
-            [opts[:headers]].flatten.collect{|h| h.downcase}
-          end
-
-          self.methods = case opts[:methods]
-          when :any then [:get, :head, :post, :put, :patch, :delete, :options]
-          else
-            ensure_enum(opts[:methods]) || [:get]
-          end.map{|e| e.to_s }
-
-          self.expose = opts[:expose] ? [opts[:expose]].flatten : nil
-        end
-
-        def matches_path?(path)
-          pattern =~ path
-        end
-
-        def match?(path, env)
-          matches_path?(path) && (if_proc.nil? || if_proc.call(env))
-        end
-
-        def process_preflight(env, result)
-          headers = {}
-
-          request_method = env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]
-          if request_method.nil?
-            result.miss(Result::MISS_NO_METHOD) and return headers
-          end
-          if !methods.include?(request_method.downcase)
-            result.miss(Result::MISS_DENY_METHOD) and return headers
-          end
-
-          request_headers = env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS]
-          if request_headers && !allow_headers?(request_headers)
-            result.miss(Result::MISS_DENY_HEADER) and return headers
-          end
-
-          result.hit = true
-          headers.merge(to_preflight_headers(env))
-        end
-
-        def to_headers(env)
-          h = {
-            'Access-Control-Allow-Origin'     => origin_for_response_header(env[HTTP_ORIGIN]),
-            'Access-Control-Allow-Methods'    => methods.collect{|m| m.to_s.upcase}.join(', '),
-            'Access-Control-Expose-Headers'   => expose.nil? ? '' : expose.join(', '),
-            'Access-Control-Max-Age'          => max_age.to_s }
-          h['Access-Control-Allow-Credentials'] = 'true' if credentials
-          h
-        end
-
-        protected
-          def public_resource?
-            @public_resource
-          end
-
-          def origin_for_response_header(origin)
-            return '*' if public_resource?
-            origin
-          end
-
-          def to_preflight_headers(env)
-            h = to_headers(env)
-            if env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS]
-              h.merge!('Access-Control-Allow-Headers' => env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS])
-            end
-            h
-          end
-
-          def allow_headers?(request_headers)
-            headers = self.headers || []
-            if headers == :any
-              return true
-            end
-            request_headers = request_headers.split(/,\s*/) if request_headers.kind_of?(String)
-            request_headers.all? do |header|
-              header = header.downcase
-              CORS_SIMPLE_HEADERS.include?(header) || headers.include?(header)
-            end
-          end
-
-          def ensure_enum(v)
-            return nil if v.nil?
-            [v].flatten
-          end
-
-          def compile(path)
-            if path.respond_to? :to_str
-              special_chars = %w{. + ( )}
-              pattern =
-                path.to_str.gsub(/((:\w+)|\/\*|[\*#{special_chars.join}])/) do |match|
-                  case match
-                  when "/*"
-                    "\\/?(.*?)"
-                  when "*"
-                    "(.*?)"
-                  when *special_chars
-                    Regexp.escape(match)
-                  else
-                    "([^/?&#]+)"
-                  end
-                end
-              /^#{pattern}$/
-            elsif path.respond_to? :match
-              path
-            else
-              raise TypeError, path
-            end
-          end
-      end
-
+      [nil, origin_matched ? Result::MISS_NO_PATH : Result::MISS_NO_ORIGIN]
+    end
   end
 end
