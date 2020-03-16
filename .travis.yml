@@ -6,3 +6,10 @@ rvm:
   - 2.4
   - 2.5
   - 2.6
+
+before_install:
+  - git clone https://github.com/TravisToolbox/rubocop-travis.git
+install:
+  - ./rubocop-travis/install.sh
+script:
+  - ./rubocop-travis/scan.sh
