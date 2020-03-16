@@ -1,9 +1,31 @@
 ---
-# Disables
 
-Style/LineLength:
-  Ednabled: false
+AllCops:
+  Exclude:
+    - 'examples/**/*'
+
+# Disables
+Layout/LineLength:
+  Enabled: false
 Style/Documentation:
   Enabled: false
+Metrics/ClassLength:
+  Enabled: false
 Metrics/MethodLength:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Style/HashEachMethods:
+  Enabled: false
+Style/HashTransformKeys:
+  Enabled: false
+Style/HashTransformValues:
+  Enabled: false
+Style/DoubleNegation:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
+Metrics/AbcSize:
   Enabled: false

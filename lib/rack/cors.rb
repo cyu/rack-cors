@@ -1,40 +1,39 @@
+# frozen_string_literal: true
+
 require 'logger'
-require_relative "cors/resources"
-require_relative "cors/resource"
-require_relative "cors/result"
-require_relative "cors/version"
+require_relative 'cors/resources'
+require_relative 'cors/resource'
+require_relative 'cors/result'
+require_relative 'cors/version'
 
 module Rack
   class Cors
-    HTTP_ORIGIN   = 'HTTP_ORIGIN'.freeze
-    HTTP_X_ORIGIN = 'HTTP_X_ORIGIN'.freeze
+    HTTP_ORIGIN   = 'HTTP_ORIGIN'
+    HTTP_X_ORIGIN = 'HTTP_X_ORIGIN'
 
-    HTTP_ACCESS_CONTROL_REQUEST_METHOD  = 'HTTP_ACCESS_CONTROL_REQUEST_METHOD'.freeze
-    HTTP_ACCESS_CONTROL_REQUEST_HEADERS = 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS'.freeze
+    HTTP_ACCESS_CONTROL_REQUEST_METHOD  = 'HTTP_ACCESS_CONTROL_REQUEST_METHOD'
+    HTTP_ACCESS_CONTROL_REQUEST_HEADERS = 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS'
 
-    PATH_INFO      = 'PATH_INFO'.freeze
-    REQUEST_METHOD = 'REQUEST_METHOD'.freeze
+    PATH_INFO      = 'PATH_INFO'
+    REQUEST_METHOD = 'REQUEST_METHOD'
 
-    RACK_LOGGER = 'rack.logger'.freeze
+    RACK_LOGGER = 'rack.logger'
     RACK_CORS   =
-    # retaining the old key for backwards compatibility
-    ENV_KEY     = 'rack.cors'.freeze
+      # retaining the old key for backwards compatibility
+      ENV_KEY = 'rack.cors'
 
-    OPTIONS     = 'OPTIONS'.freeze
-    VARY        = 'Vary'.freeze
+    OPTIONS     = 'OPTIONS'
+    VARY        = 'Vary'
 
     DEFAULT_VARY_HEADERS = ['Origin'].freeze
 
-    # All CORS routes need to accept CORS simple headers at all times
-    # {https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers}
-    CORS_SIMPLE_HEADERS = ['accept', 'accept-language', 'content-language', 'content-type'].freeze
-
-    def initialize(app, opts={}, &block)
+    def initialize(app, opts = {}, &block)
       @app = app
       @debug_mode = !!opts[:debug]
       @logger = @logger_proc = nil
 
-      if logger = opts[:logger]
+      logger = opts[:logger]
+      if logger
         if logger.respond_to? :call
           @logger_proc = opts[:logger]
         else
@@ -42,12 +41,12 @@ module Rack
         end
       end
 
-      if block_given?
-        if block.arity == 1
-          block.call(self)
-        else
-          instance_eval(&block)
-        end
+      return unless block_given?
+
+      if block.arity == 1
+        block.call(self)
+      else
+        instance_eval(&block)
       end
     end
 
@@ -73,20 +72,20 @@ module Rack
       add_headers = nil
       if env[HTTP_ORIGIN]
         debug(env) do
-          [ 'Incoming Headers:',
-            "  Origin: #{env[HTTP_ORIGIN]}",
-            "  Path-Info: #{path}",
-            "  Access-Control-Request-Method: #{env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]}",
-            "  Access-Control-Request-Headers: #{env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS]}"
-            ].join("\n")
+          ['Incoming Headers:',
+           "  Origin: #{env[HTTP_ORIGIN]}",
+           "  Path-Info: #{path}",
+           "  Access-Control-Request-Method: #{env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]}",
+           "  Access-Control-Request-Headers: #{env[HTTP_ACCESS_CONTROL_REQUEST_HEADERS]}"].join("\n")
         end
 
         if env[REQUEST_METHOD] == OPTIONS && env[HTTP_ACCESS_CONTROL_REQUEST_METHOD]
           return [400, {}, []] unless Rack::Utils.valid_path?(path)
+
           headers = process_preflight(env, path)
           debug(env) do
             "Preflight Headers:\n" +
-                headers.collect{|kv| "  #{kv.join(': ')}"}.join("\n")
+              headers.collect { |kv| "  #{kv.join(': ')}" }.join("\n")
           end
           return [200, headers, []]
         else
@@ -107,9 +106,7 @@ module Rack
         headers = add_headers.merge(headers)
         debug(env) do
           add_headers.each_pair do |key, value|
-            if headers.has_key?(key)
-              headers["X-Rack-CORS-Original-#{key}"] = value
-            end
+            headers["X-Rack-CORS-Original-#{key}"] = value if headers.key?(key)
           end
         end
       end
@@ -119,17 +116,16 @@ module Rack
       # Better explained here: http://www.fastly.com/blog/best-practices-for-using-the-vary-header/
       if vary_resource
         vary = headers[VARY]
-        cors_vary_headers = if vary_resource.vary_headers && vary_resource.vary_headers.any?
-          vary_resource.vary_headers
-        else
-          DEFAULT_VARY_HEADERS
-        end
-        headers[VARY] = ((vary ? ([vary].flatten.map { |v| v.split(/,\s*/) }.flatten) : []) + cors_vary_headers).uniq.join(', ')
+        cors_vary_headers = if vary_resource.vary_headers&.any?
+                              vary_resource.vary_headers
+                            else
+                              DEFAULT_VARY_HEADERS
+                            end
+        headers[VARY] = ((vary ? [vary].flatten.map { |v| v.split(/,\s*/) }.flatten : []) + cors_vary_headers).uniq.join(', ')
       end
 
-      if debug? && result = env[ENV_KEY]
-        result.append_header(headers)
-      end
+      result = env[ENV_KEY]
+      result.append_header(headers) if debug? && result
 
       [status, headers, body]
     end
@@ -142,19 +138,19 @@ module Rack
 
     def select_logger(env)
       @logger = if @logger_proc
-        logger_proc = @logger_proc
-        @logger_proc = nil
-        logger_proc.call
+                  logger_proc = @logger_proc
+                  @logger_proc = nil
+                  logger_proc.call
 
-      elsif defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
-        Rails.logger
+                elsif defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+                  Rails.logger
 
-      elsif env[RACK_LOGGER]
-        env[RACK_LOGGER]
+                elsif env[RACK_LOGGER]
+                  env[RACK_LOGGER]
 
-      else
-        ::Logger.new(STDOUT).tap { |logger| logger.level = ::Logger::Severity::DEBUG }
-      end
+                else
+                  ::Logger.new(STDOUT).tap { |logger| logger.level = ::Logger::Severity::DEBUG }
+                end
     end
 
     def evaluate_path(env)
@@ -163,9 +159,7 @@ module Rack
       if path
         path = Rack::Utils.unescape_path(path)
 
-        if Rack::Utils.valid_path?(path)
-          path = Rack::Utils.clean_path_info(path)
-        end
+        path = Rack::Utils.clean_path_info(path) if Rack::Utils.valid_path?(path)
       end
 
       path
@@ -184,7 +178,7 @@ module Rack
         return {}
       end
 
-      return resource.process_preflight(env, result)
+      resource.process_preflight(env, result)
     end
 
     def process_cors(env, path)
@@ -202,9 +196,8 @@ module Rack
 
     def resource_for_path(path_info)
       all_resources.each do |r|
-        if found = r.resource_for_path(path_info)
-          return found
-        end
+        found = r.resource_for_path(path_info)
+        return found if found
       end
       nil
     end
@@ -214,12 +207,11 @@ module Rack
 
       origin_matched = false
       all_resources.each do |r|
-        if r.allow_origin?(origin, env)
-          origin_matched = true
-          if found = r.match_resource(path, env)
-            return [found, nil]
-          end
-        end
+        next unless r.allow_origin?(origin, env)
+
+        origin_matched = true
+        found = r.match_resource(path, env)
+        return [found, nil] if found
       end
 
       [nil, origin_matched ? Result::MISS_NO_PATH : Result::MISS_NO_ORIGIN]

@@ -1,14 +1,16 @@
+# frozen_string_literal: true
+
 module Rack
   class Cors
     class Result
-      HEADER_KEY = 'X-Rack-CORS'.freeze
+      HEADER_KEY = 'X-Rack-CORS'
 
-      MISS_NO_ORIGIN = 'no-origin'.freeze
-      MISS_NO_PATH   = 'no-path'.freeze
+      MISS_NO_ORIGIN = 'no-origin'
+      MISS_NO_PATH   = 'no-path'
 
-      MISS_NO_METHOD   = 'no-method'.freeze
-      MISS_DENY_METHOD = 'deny-method'.freeze
-      MISS_DENY_HEADER = 'deny-header'.freeze
+      MISS_NO_METHOD   = 'no-method'
+      MISS_DENY_METHOD = 'deny-method'
+      MISS_DENY_HEADER = 'deny-header'
 
       attr_accessor :preflight, :hit, :miss_reason
 
@@ -46,16 +48,15 @@ module Rack
         env[Rack::Cors::ENV_KEY] = r
       end
 
-
       def append_header(headers)
         headers[HEADER_KEY] = if hit?
-          preflight? ? 'preflight-hit' : 'hit'
-        else
-          [
-            (preflight? ? 'preflight-miss' : 'miss'),
-            miss_reason
-          ].join('; ')
-        end
+                                preflight? ? 'preflight-hit' : 'hit'
+                              else
+                                [
+                                  (preflight? ? 'preflight-miss' : 'miss'),
+                                  miss_reason
+                                ].join('; ')
+                              end
       end
     end
   end
