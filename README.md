@@ -116,24 +116,32 @@ A Resource path can be specified as exact string match (`/path/to/file.txt`) or 
 
 ## Common Gotchas
 
-Incorrect positioning of `Rack::Cors` in the middleware stack can produce unexpected results.  The Rails example above will put it above all middleware which should cover most issues.
+### Positioning in the Middleware Stack
 
-Here are some common cases:
+Positioning of `Rack::Cors` in the middleware stack is very important. In the Rails example above we put it above all other middleware which, in our experience, provides the most consistent results.
 
-* **Serving static files.**  Insert this middleware before `ActionDispatch::Static` so that static files are served with the proper CORS headers (see note below for a caveat).  **NOTE:** that this might not work in production environments as static files are usually served from the web server (Nginx, Apache) and not the Rails container.
+Here are some scenarios where incorrect positioning have created issues:
 
-* **Caching in the middleware.**  Insert this middleware before `Rack::Cache` so that the proper CORS headers are written and not cached ones.
+* **Serving static files.**  Insert before `ActionDispatch::Static` so that static files are served with the proper CORS headers.  **NOTE:** this might not work in production as static files are usually served from the web server (Nginx, Apache) and not the Rails container.
 
-* **Authentication via Warden**  Warden will return immediately if a resource that requires authentication is accessed without authentication.  If `Warden::Manager`is in the stack before `Rack::Cors`, it will return without the correct CORS headers being applied, resulting in a failed CORS request.  Be sure to insert this middleware before 'Warden::Manager`.
+* **Caching in the middleware.**  Insert before `Rack::Cache` so that the proper CORS headers are written and not cached ones.
 
-To determine where to put the CORS middleware in the Rack stack, run the following command:
+* **Authentication via Warden**  Warden will return immediately if a resource that requires authentication is accessed without authentication.  If `Warden::Manager`is in the stack before `Rack::Cors`, it will return without the correct CORS headers being applied, resulting in a failed CORS request.
+
+You can run the following command to see what the middleware stack looks like:
 
 ```bash
 bundle exec rake middleware
 ```
 
-In many cases, the Rack stack will be different running in production environments.  For example, the `ActionDispatch::Static` middleware will not be part of the stack if `config.serve_static_assets = false`.  You can run the following command to see what your middleware stack looks like in production:
+Note that the middleware stack is different in production.  For example, the `ActionDispatch::Static` middleware will not be part of the stack if `config.serve_static_assets = false`.  You can run this to see what your middleware stack looks like in production:
 
 ```bash
 RAILS_ENV=production bundle exec rake middleware
 ```
+
+### Serving static files
+
+If you trying to serve CORS headers on static assets (like CSS, JS, Font files), keep in mind that static files are usually served directly from web servers and never runs through the Rails container (including the middleware stack where `Rack::Cors` resides).
+
+In Heroku, you can serve static assets through the Rails container by setting `config.serve_static_assets = true` in `production.rb`.
