@@ -1,4 +1,6 @@
-CORS_SERVER = '127.0.0.1.xip.io:9292'
+CORS_SERVER = '127.0.0.1.xip.io:3000'
+
+mocha.setup({ignoreLeaks: true});
 
 describe 'CORS', ->
 
@@ -34,7 +36,7 @@ describe 'CORS', ->
 
   it 'should allow access to static resource', (done) ->
     $.get "http://#{CORS_SERVER}/static.txt", (data, status, xhr) ->
-      expect($.trim(data)).to.eql("hello world")
+      expect($.trim(data)).to.eql("Hello world")
       done()
 
   it 'should allow post resource', (done) ->

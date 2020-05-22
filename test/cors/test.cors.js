@@ -2,7 +2,11 @@
 (function() {
   var CORS_SERVER;
 
-  CORS_SERVER = '127.0.0.1.xip.io:9292';
+  CORS_SERVER = '127.0.0.1.xip.io:3000';
+
+  mocha.setup({
+    ignoreLeaks: true
+  });
 
   describe('CORS', function() {
     it('should allow access to dynamic resource', function(done) {
@@ -53,7 +57,7 @@
     });
     it('should allow access to static resource', function(done) {
       return $.get(`http://${CORS_SERVER}/static.txt`, function(data, status, xhr) {
-        expect($.trim(data)).to.eql("hello world");
+        expect($.trim(data)).to.eql("Hello world");
         return done();
       });
     });
