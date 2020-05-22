@@ -20,37 +20,30 @@ gem 'rack-cors'
 ## Configuration
 
 ### Rails Configuration
-Put something like the code below in `config/application.rb` of your Rails application. For example, this will allow GET, POST or OPTIONS requests from any origin on any resource.
+For Rails, you'll need to add this middleware on application startup. A pratical way to do this is with an initializer file. For example, the following will allow GET, POST, PATCH, or PUT requests from any origin on any resource:
 
 ```ruby
-module YourApp
-  class Application < Rails::Application
-    # ...
-    
-    # Rails 5
+# config/initializers/cors.rb
 
-    config.middleware.insert_before 0, Rack::Cors do
-      allow do
-        origins '*'
-        resource '*', headers: :any, methods: [:get, :post, :options]
-      end
-    end
-
-    # Rails 3/4
-
-    config.middleware.insert_before 0, "Rack::Cors" do
-      allow do
-        origins '*'
-        resource '*', headers: :any, methods: [:get, :post, :options]
-      end
-    end
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins '*'
+    resource '*', headers: :any, methods: [:get, :post, :patch, :put]
   end
 end
 ```
 
-We use `insert_before` to make sure `Rack::Cors` runs at the beginning of the stack to make sure it isn't interfered with by other middleware (see `Rack::Cache` note in **Common Gotchas** section). Check out the [rails 5 example](https://github.com/cyu/rack-cors/tree/master/examples/rails5).
+We use `insert_before` to make sure `Rack::Cors` runs at the beginning of the stack to make sure it isn't interfered with by other middleware (see `Rack::Cache` note in **Common Gotchas** section). Basic setup examples for Rails 5 & Rails 6 can be found in the examples/ directory.
 
 See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware).
+
+*Note about Rails 6*: Rails 6 has support for blocking requests from unknown hosts, so origin domains will need to be added there as well.
+
+```ruby
+Rails.application.config.hosts << "product.com"
+```
+
+Read more about it here in the [Rails Guides](https://guides.rubyonrails.org/configuring.html#configuring-middleware)
 
 ### Rack Configuration
 
