@@ -47,7 +47,7 @@ Read more about it here in the [Rails Guides](https://guides.rubyonrails.org/con
 
 ### Rack Configuration
 
-NOTE: If you're running Rails, updating in `config/application.rb` should be enough.  There is no need to update `config.ru` as well.
+NOTE: If you're running Rails, adding `config/initializers/cors.rb` should be enough.  There is no need to update `config.ru` as well.
 
 In `config.ru`, configure `Rack::Cors` by passing a block to the `use` command:
 
@@ -108,6 +108,15 @@ A Resource path can be specified as exact string match (`/path/to/file.txt`) or 
 
 
 ## Common Gotchas
+
+### Origin Matching
+
+When specifying an origin, make sure that it does not have a trailing slash.
+
+### Testing Postman and/or CURL
+
+* Make sure you're passing in an `Origin:` header.  That header is required to trigger a CORS response.
+* Make sure your origin does not have a trailing slash.
 
 ### Positioning in the Middleware Stack
 
