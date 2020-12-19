@@ -113,9 +113,9 @@ A Resource path can be specified as exact string match (`/path/to/file.txt`) or 
 
 When specifying an origin, make sure that it does not have a trailing slash.
 
-### Testing Postman and/or CURL
+### Testing Postman and/or cURL
 
-* Make sure you're passing in an `Origin:` header.  That header is required to trigger a CORS response.
+* Make sure you're passing in an `Origin:` header.  That header is required to trigger a CORS response.  Here's [a good SO post](https://stackoverflow.com/questions/12173990/how-can-you-debug-a-cors-request-with-curl) about using cURL for testing CORS.
 * Make sure your origin does not have a trailing slash.
 
 ### Positioning in the Middleware Stack
