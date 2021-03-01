@@ -147,3 +147,14 @@ RAILS_ENV=production bundle exec rake middleware
 If you trying to serve CORS headers on static assets (like CSS, JS, Font files), keep in mind that static files are usually served directly from web servers and never runs through the Rails container (including the middleware stack where `Rack::Cors` resides).
 
 In Heroku, you can serve static assets through the Rails container by setting `config.serve_static_assets = true` in `production.rb`.
+
+### Custom Protocols (chrome-extension://, ionic://, etc.)
+
+`http://`, `https://`, and `file://` are the only protocols supported in the
+`origins` list (see the regex in cors.rb). If you wish to specify an origin that
+has a custom protocol (`chrome-extension://`, `ionic://`, etc.) simply exclude
+the protocol. [See issue.](https://github.com/cyu/rack-cors/issues/100)
+
+For example, instead of specifying
+`chrome-extension://aomjjhallfgjeglblehebfpbcfeobpga` specify
+`aomjjhallfgjeglblehebfpbcfeobpga` in `origins`.
