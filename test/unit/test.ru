@@ -10,7 +10,8 @@ use Rack::Cors do
             '127.0.0.1:3000',
             %r{http://192\.168\.0\.\d{1,3}(:\d+)?},
             'file://',
-            %r{http://(.*?)\.example\.com}
+            %r{http://(.*?)\.example\.com},
+            'custom-protocol://abcdefg'
 
     resource '/get-only', methods: :get
     resource '/', headers: :any, methods: :any
