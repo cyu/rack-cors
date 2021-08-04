@@ -373,6 +373,12 @@ describe Rack::Cors do
       last_response.headers['Access-Control-Allow-Origin'].must_equal 'file://'
     end
 
+    it 'supports custom protocols in origin' do
+      preflight_request('custom-protocol://abcdefg', '/')
+      last_response.must_render_cors_success
+      last_response.headers['Access-Control-Allow-Origin'].must_equal 'custom-protocol://abcdefg'
+    end
+
     describe '' do
       let(:app) do
         test = self
