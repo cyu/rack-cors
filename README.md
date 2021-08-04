@@ -89,7 +89,7 @@ end
 #### Origin
 Origins can be specified as a string, a regular expression, or as '\*' to allow all origins.
 
-**\*SECURITY NOTE:** Be careful when using regular expressions to not accidentally be too inclusive.  For example, the expression `/https:\/\/example\.com/` will match the domain *example.com.randomdomainname.co.uk*.  It is recommended that any regular expression be enclosed with start & end string anchors (`\A\z`).
+**\*SECURITY NOTE:** Be careful when using regular expressions to not accidentally be too inclusive.  For example, the expression `/https:\/\/example\.com/` will match the domain *example.com.randomdomainname.co.uk*.  It is recommended that any regular expression be enclosed with start & end string anchors, like `\Ahttps:\/\/example\.com\z`.
 
 Additionally, origins can be specified dynamically via a block of the following form:
 ```ruby
