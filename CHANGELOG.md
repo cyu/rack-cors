@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2.0.0 - 2021-08-04
+### Changed
+- Refactored codebase
+- Support declaring custom protocols in origin
+
 ## 1.1.1 - 2019-12-29
 ### Changed
 - Allow /<resource>/* to match /<resource>/ and /<resource> paths
