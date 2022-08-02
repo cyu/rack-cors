@@ -1,6 +1,39 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2.0.0 - 2021-08-04
+### Changed
+- Refactored codebase
+- Support declaring custom protocols in origin
+
+## 1.1.1 - 2019-12-29
+### Changed
+- Allow /<resource>/* to match /<resource>/ and /<resource> paths
+
+## 1.1.0 - 2019-11-19
+### Changed
+- Use Rack::Utils.escape_path instead of Rack::Utils.escape
+- Require Rack 2.0 for escape_path method
+- Don't try to clean path if invalid.
+- Return 400 (Bad Request) on preflights with invalid path
+
+## 1.0.6 - 2019-11-14
+### Changed
+- Use Rack::Utils.escape to make compat with Rack 1.6.0
+
+## 1.0.5 - 2019-11-14
+### Changed
+- Update Gem spec to require rack >= 1.6.0
+
+## 1.0.4 - 2019-11-13
+### Security
+- Escape and resolve path before evaluating resource rules (thanks to Colby Morgan)
+
+## 1.0.3 - 2019-03-24
+### Changed
+- Don't send 'Content-Type' header with pre-flight requests
+- Allow ruby array for  vary header config
+
 ## 1.0.2 - 2017-10-22
 ### Fixed
 - Automatically allow simple headers when headers are set

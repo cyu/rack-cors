@@ -13,50 +13,41 @@ Install the gem:
 Or in your Gemfile:
 
 ```ruby
-gem 'rack-cors', :require => 'rack/cors'
+gem 'rack-cors'
 ```
 
 
 ## Configuration
 
 ### Rails Configuration
-Put something like the code below in `config/application.rb` of your Rails application. For example, this will allow GET, POST or OPTIONS requests from any origin on any resource.
+For Rails, you'll need to add this middleware on application startup. A practical way to do this is with an initializer file. For example, the following will allow GET, POST, PATCH, or PUT requests from any origin on any resource:
 
 ```ruby
-module YourApp
-  class Application < Rails::Application
+# config/initializers/cors.rb
 
-    # ...
-    
-    # Rails 5
-
-    config.middleware.insert_before 0, Rack::Cors do
-      allow do
-        origins '*'
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
-      end
-    end
-
-    # Rails 3/4
-
-    config.middleware.insert_before 0, "Rack::Cors" do
-      allow do
-        origins '*'
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
-      end
-    end
-    
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins '*'
+    resource '*', headers: :any, methods: [:get, :post, :patch, :put]
   end
 end
 ```
 
-We use `insert_before` to make sure `Rack::Cors` runs at the beginning of the stack to make sure it isn't interfered with by other middleware (see `Rack::Cache` note in **Common Gotchas** section). Check out the [rails 4 example](https://github.com/cyu/rack-cors/tree/master/examples/rails4) and [rails 3 example](https://github.com/cyu/rack-cors/tree/master/examples/rails3).
+We use `insert_before` to make sure `Rack::Cors` runs at the beginning of the stack to make sure it isn't interfered with by other middleware (see `Rack::Cache` note in **Common Gotchas** section). Basic setup examples for Rails 5 & Rails 6 can be found in the examples/ directory.
 
 See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware).
 
+*Note about Rails 6*: Rails 6 has support for blocking requests from unknown hosts, so origin domains will need to be added there as well.
+
+```ruby
+Rails.application.config.hosts << "product.com"
+```
+
+Read more about it here in the [Rails Guides](https://guides.rubyonrails.org/configuring.html#configuring-middleware)
+
 ### Rack Configuration
 
-NOTE: If you're running Rails, updating in `config/application.rb` should be enough.  There is no need to update `config.ru` as well.
+NOTE: If you're running Rails, adding `config/initializers/cors.rb` should be enough.  There is no need to update `config.ru` as well.
 
 In `config.ru`, configure `Rack::Cors` by passing a block to the `use` command:
 
@@ -69,16 +60,22 @@ use Rack::Cors do
 
     resource '/file/list_all/', :headers => 'x-domain-token'
     resource '/file/at/*',
-        :methods => [:get, :post, :delete, :put, :patch, :options, :head],
-        :headers => 'x-domain-token',
-        :expose  => ['Some-Custom-Response-Header'],
-        :max_age => 600
+        methods: [:get, :post, :delete, :put, :patch, :options, :head],
+        headers: 'x-domain-token',
+        expose: ['Some-Custom-Response-Header'],
+        max_age: 600
         # headers to expose
   end
 
   allow do
     origins '*'
-    resource '/public/*', :headers => :any, :methods => :get
+    resource '/public/*', headers: :any, methods: :get
+
+    # Only allow a request for a specific host
+    resource '/api/v1/*',
+        headers: :any,
+        methods: :get,
+        if: proc { |env| env['HTTP_HOST'] == 'api.example.com' }
   end
 end
 ```
@@ -92,14 +89,14 @@ end
 #### Origin
 Origins can be specified as a string, a regular expression, or as '\*' to allow all origins.
 
-**\*SECURITY NOTE:** Be careful when using regular expressions to not accidentally be too inclusive.  For example, the expression `/https:\/\/example\.com/` will match the domain *example.com.randomdomainname.co.uk*.  It is recommended that any regular expression be enclosed with start & end string anchors (`\A\z`).
+**\*SECURITY NOTE:** Be careful when using regular expressions to not accidentally be too inclusive.  For example, the expression `/https:\/\/example\.com/` will match the domain *example.com.randomdomainname.co.uk*.  It is recommended that any regular expression be enclosed with start & end string anchors, like `\Ahttps:\/\/example\.com\z`.
 
 Additionally, origins can be specified dynamically via a block of the following form:
 ```ruby
   origins { |source, env| true || false }
 ```
 
-A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '\*' wildcard (`/all/files/in/*`).  To include all of a directory's files and the files in its subdirectories, use this form: `/assets/**/*`.  A resource can take the following options:
+A Resource path can be specified as exact string match (`/path/to/file.txt`) or with a '\*' wildcard (`/all/files/in/*`).  A resource can take the following options:
 
 * **methods** (string or array or `:any`): The HTTP methods allowed for the resource.
 * **headers** (string or array or `:any`): The HTTP headers that will be allowed in the CORS resource request.  Use `:any` to allow for any headers in the actual request.
@@ -112,24 +109,41 @@ A Resource path can be specified as exact string match (`/path/to/file.txt`) or 
 
 ## Common Gotchas
 
-Incorrect positioning of `Rack::Cors` in the middleware stack can produce unexpected results.  The Rails example above will put it above all middleware which should cover most issues.
+### Origin Matching
 
-Here are some common cases:
+When specifying an origin, make sure that it does not have a trailing slash.
 
-* **Serving static files.**  Insert this middleware before `ActionDispatch::Static` so that static files are served with the proper CORS headers (see note below for a caveat).  **NOTE:** that this might not work in production environments as static files are usually served from the web server (Nginx, Apache) and not the Rails container.
+### Testing Postman and/or cURL
 
-* **Caching in the middleware.**  Insert this middleware before `Rack::Cache` so that the proper CORS headers are written and not cached ones.
+* Make sure you're passing in an `Origin:` header.  That header is required to trigger a CORS response.  Here's [a good SO post](https://stackoverflow.com/questions/12173990/how-can-you-debug-a-cors-request-with-curl) about using cURL for testing CORS.
+* Make sure your origin does not have a trailing slash.
 
-* **Authentication via Warden**  Warden will return immediately if a resource that requires authentication is accessed without authentication.  If `Warden::Manager`is in the stack before `Rack::Cors`, it will return without the correct CORS headers being applied, resulting in a failed CORS request.  Be sure to insert this middleware before 'Warden::Manager`.
+### Positioning in the Middleware Stack
 
-To determine where to put the CORS middleware in the Rack stack, run the following command:
+Positioning of `Rack::Cors` in the middleware stack is very important. In the Rails example above we put it above all other middleware which, in our experience, provides the most consistent results.
+
+Here are some scenarios where incorrect positioning have created issues:
+
+* **Serving static files.**  Insert before `ActionDispatch::Static` so that static files are served with the proper CORS headers.  **NOTE:** this might not work in production as static files are usually served from the web server (Nginx, Apache) and not the Rails container.
+
+* **Caching in the middleware.**  Insert before `Rack::Cache` so that the proper CORS headers are written and not cached ones.
+
+* **Authentication via Warden**  Warden will return immediately if a resource that requires authentication is accessed without authentication.  If `Warden::Manager`is in the stack before `Rack::Cors`, it will return without the correct CORS headers being applied, resulting in a failed CORS request.
+
+You can run the following command to see what the middleware stack looks like:
 
 ```bash
 bundle exec rake middleware
 ```
 
-In many cases, the Rack stack will be different running in production environments.  For example, the `ActionDispatch::Static` middleware will not be part of the stack if `config.serve_static_assets = false`.  You can run the following command to see what your middleware stack looks like in production:
+Note that the middleware stack is different in production.  For example, the `ActionDispatch::Static` middleware will not be part of the stack if `config.serve_static_assets = false`.  You can run this to see what your middleware stack looks like in production:
 
 ```bash
 RAILS_ENV=production bundle exec rake middleware
 ```
+
+### Serving static files
+
+If you trying to serve CORS headers on static assets (like CSS, JS, Font files), keep in mind that static files are usually served directly from web servers and never runs through the Rails container (including the middleware stack where `Rack::Cors` resides).
+
+In Heroku, you can serve static assets through the Rails container by setting `config.serve_static_assets = true` in `production.rb`.
