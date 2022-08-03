@@ -111,7 +111,9 @@ A Resource path can be specified as exact string match (`/path/to/file.txt`) or 
 
 ### Origin Matching
 
-When specifying an origin, make sure that it does not have a trailing slash.
+* When specifying an origin, make sure that it does not have a trailing slash.
+
+* When specifying an HTTP origin that uses the scheme's default port (e.g. `http://example.test:80`), some clients may not strip the port which could result in unexpected blocked requests (additional context [here](https://github.com/request/request/pull/2904)).
 
 ### Testing Postman and/or cURL
 
