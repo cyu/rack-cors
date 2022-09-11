@@ -114,13 +114,13 @@ module Rack
       # response to be different depending on the Origin header value.
       # Better explained here: http://www.fastly.com/blog/best-practices-for-using-the-vary-header/
       if vary_resource
-        vary = headers['vary']
+        vary = headers['vary'] || ''
         cors_vary_headers = if vary_resource.vary_headers&.any?
                               vary_resource.vary_headers
                             else
                               DEFAULT_VARY_HEADERS
                             end
-        headers['vary'] = ((vary ? [vary].flatten.map { |v| v.split(/,\s*/) }.flatten : []) + cors_vary_headers).uniq.join(', ')
+        headers['vary'] = (vary.split(/,\s*/) + cors_vary_headers).uniq.join(', ')
       end
 
       result = env[ENV_KEY]

@@ -49,7 +49,7 @@ class FakeProxy
 
   def call(env)
     status, headers, body = @app.call(env)
-    headers['vary'] = %w[Origin User-Agent]
+    headers['vary'] = 'Origin, User-Agent'
     [status, headers, body]
   end
 end
