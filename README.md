@@ -150,11 +150,9 @@ In Heroku, you can serve static assets through the Rails container by setting `c
 
 ### Custom Protocols (chrome-extension://, ionic://, etc.)
 
-`http://`, `https://`, and `file://` are the only protocols supported in the
-`origins` list (see the regex in cors.rb). If you wish to specify an origin that
-has a custom protocol (`chrome-extension://`, `ionic://`, etc.) simply exclude
-the protocol. [See issue.](https://github.com/cyu/rack-cors/issues/100)
+Prior to 2.0.0, `http://`, `https://`, and `file://` are the only protocols supported in the `origins` list. If you wish to specify an origin that
+has a custom protocol (`chrome-extension://`, `ionic://`, etc.) simply exclude the protocol. [See issue.](https://github.com/cyu/rack-cors/issues/100)
 
-For example, instead of specifying
-`chrome-extension://aomjjhallfgjeglblehebfpbcfeobpga` specify
-`aomjjhallfgjeglblehebfpbcfeobpga` in `origins`.
+For example, instead of specifying `chrome-extension://aomjjhallfgjeglblehebfpbcfeobpga` specify `aomjjhallfgjeglblehebfpbcfeobpga` in `origins`.
+
+As of 2.0.0 (currently in RC1), you can specify origins with a custom protocol.
