@@ -18,11 +18,11 @@ describe Rack::Cors, 'DSL' do
     end
     resources = cors.send :all_resources
 
-    resources.length.must_equal 1
-    resources.first.allow_origin?('http://localhost:3000').must_equal true
-    resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'test-agent' }).must_equal true
-    resources.first.allow_origin?('http://10.10.10.10:3001', { 'USER_AGENT' => 'test-agent' }).wont_equal true
-    resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'other-agent' }).wont_equal true
+    _(resources.length).must_equal 1
+    _(resources.first.allow_origin?('http://localhost:3000')).must_equal true
+    _(resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'test-agent' })).must_equal true
+    _(resources.first.allow_origin?('http://10.10.10.10:3001', { 'USER_AGENT' => 'test-agent' })).wont_equal true
+    _(resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'other-agent' })).wont_equal true
   end
 
   it 'should support implicit config object dsl mode' do
@@ -38,11 +38,11 @@ describe Rack::Cors, 'DSL' do
     end
     resources = cors.send :all_resources
 
-    resources.length.must_equal 1
-    resources.first.allow_origin?('http://localhost:3000').must_equal true
-    resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'test-agent' }).must_equal true
-    resources.first.allow_origin?('http://10.10.10.10:3001', { 'USER_AGENT' => 'test-agent' }).wont_equal true
-    resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'other-agent' }).wont_equal true
+    _(resources.length).must_equal 1
+    _(resources.first.allow_origin?('http://localhost:3000')).must_equal true
+    _(resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'test-agent' })).must_equal true
+    _(resources.first.allow_origin?('http://10.10.10.10:3001', { 'USER_AGENT' => 'test-agent' })).wont_equal true
+    _(resources.first.allow_origin?('http://10.10.10.10:3000', { 'USER_AGENT' => 'other-agent' })).wont_equal true
   end
 
   it 'should support "file://" origin' do
@@ -54,7 +54,7 @@ describe Rack::Cors, 'DSL' do
     end
     resources = cors.send :all_resources
 
-    resources.first.allow_origin?('file://').must_equal true
+    _(resources.first.allow_origin?('file://')).must_equal true
   end
 
   it 'should default credentials option to false' do
@@ -65,6 +65,6 @@ describe Rack::Cors, 'DSL' do
       end
     end
     resources = cors.send :all_resources
-    resources.first.resources.first.credentials.must_equal false
+    _(resources.first.resources.first.credentials).must_equal false
   end
 end

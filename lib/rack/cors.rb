@@ -23,7 +23,6 @@ module Rack
       ENV_KEY = 'rack.cors'
 
     OPTIONS     = 'OPTIONS'
-    VARY        = 'Vary'
 
     DEFAULT_VARY_HEADERS = ['Origin'].freeze
 
@@ -106,7 +105,7 @@ module Rack
         headers = add_headers.merge(headers)
         debug(env) do
           add_headers.each_pair do |key, value|
-            headers["X-Rack-CORS-Original-#{key}"] = value if headers.key?(key)
+            headers["x-rack-cors-original-#{key}"] = value if headers.key?(key)
           end
         end
       end
@@ -115,13 +114,13 @@ module Rack
       # response to be different depending on the Origin header value.
       # Better explained here: http://www.fastly.com/blog/best-practices-for-using-the-vary-header/
       if vary_resource
-        vary = headers[VARY]
+        vary = headers['vary']
         cors_vary_headers = if vary_resource.vary_headers&.any?
                               vary_resource.vary_headers
                             else
                               DEFAULT_VARY_HEADERS
                             end
-        headers[VARY] = ((vary ? [vary].flatten.map { |v| v.split(/,\s*/) }.flatten : []) + cors_vary_headers).uniq.join(', ')
+        headers['vary'] = ((vary ? [vary].flatten.map { |v| v.split(/,\s*/) }.flatten : []) + cors_vary_headers).uniq.join(', ')
       end
 
       result = env[ENV_KEY]

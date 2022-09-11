@@ -60,12 +60,12 @@ module Rack
 
       def to_headers(env)
         h = {
-          'Access-Control-Allow-Origin' => origin_for_response_header(env[Rack::Cors::HTTP_ORIGIN]),
-          'Access-Control-Allow-Methods' => methods.collect { |m| m.to_s.upcase }.join(', '),
-          'Access-Control-Expose-Headers' => expose.nil? ? '' : expose.join(', '),
-          'Access-Control-Max-Age' => max_age.to_s
+          'access-control-allow-origin' => origin_for_response_header(env[Rack::Cors::HTTP_ORIGIN]),
+          'access-control-allow-methods' => methods.collect { |m| m.to_s.upcase }.join(', '),
+          'access-control-expose-headers' => expose.nil? ? '' : expose.join(', '),
+          'access-control-max-age' => max_age.to_s
         }
-        h['Access-Control-Allow-Credentials'] = 'true' if credentials
+        h['access-control-allow-credentials'] = 'true' if credentials
         h
       end
 

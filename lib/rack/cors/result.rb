@@ -3,7 +3,7 @@
 module Rack
   class Cors
     class Result
-      HEADER_KEY = 'X-Rack-CORS'
+      HEADER_KEY = 'x-rack-cors'
 
       MISS_NO_ORIGIN = 'no-origin'
       MISS_NO_PATH   = 'no-path'
