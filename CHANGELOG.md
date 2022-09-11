@@ -1,10 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## 2.0.0 - 2021-08-04
+## 2.0.0 - 2022-09-11
 ### Changed
 - Refactored codebase
 - Support declaring custom protocols in origin
+- Lowercased header names as defined by Rack spec
 
 ## 1.1.1 - 2019-12-29
 ### Changed
