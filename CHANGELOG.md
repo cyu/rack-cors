@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Refactored codebase
 - Support declaring custom protocols in origin
 - Lowercased header names as defined by Rack spec
+- Fix issue with duplicate headers because of header name case
 
 ## 1.1.1 - 2019-12-29
 ### Changed
