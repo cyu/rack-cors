@@ -66,7 +66,7 @@ module Rack
           'access-control-max-age' => max_age.to_s
         }
         h['access-control-allow-credentials'] = 'true' if credentials
-        h
+        Rack::Utils::HeaderHash.new(h)
       end
 
       protected
