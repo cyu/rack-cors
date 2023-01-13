@@ -2,7 +2,7 @@
 
 `Rack::Cors` provides support for Cross-Origin Resource Sharing (CORS) for Rack compatible web applications.
 
-The [CORS spec](http://www.w3.org/TR/cors/) allows web applications to make cross domain AJAX calls without using workarounds such as JSONP. See [Cross-domain Ajax with Cross-Origin Resource Sharing](http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/)
+The [CORS spec](http://www.w3.org/TR/cors/) allows web applications to make cross domain AJAX calls without using workarounds such as JSONP. See [further explanations on MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 
 ## Installation
 
