@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## 2.0.0 - 2022-09-11
+## 2.0.0 - 2023-02-14
 ### Changed
 - Refactored codebase
 - Support declaring custom protocols in origin
