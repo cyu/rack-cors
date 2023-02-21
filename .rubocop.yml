@@ -1,8 +1,8 @@
 ---
-
 AllCops:
   Exclude:
-    - 'examples/**/*'
+    - "examples/**/*"
+    - "vendor/**/*"
 
 # Disables
 Layout/LineLength:
