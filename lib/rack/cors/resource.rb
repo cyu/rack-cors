@@ -66,7 +66,8 @@ module Rack
           'access-control-max-age' => max_age.to_s
         }
         h['access-control-allow-credentials'] = 'true' if credentials
-        Gem.loaded_specs['rack'].version >= Gem::Version.new('3') ? h : Rack::Utils::HeaderHash.new(h)
+        # Gem.loaded_specs['rack'].version >= Gem::Version.new('3') ? h : Rack::Utils::HeaderHash.new(h)
+        (defined? Rack::Utils::HeaderHash) ? Rack::Utils::HeaderHash.new(h) : h
       end
 
       protected
