@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'rack/builder'
+require 'rack/lint'
 require 'minitest/autorun'
 require 'rack/test'
 require 'mocha/setup'
