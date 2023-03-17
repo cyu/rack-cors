@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2.0.1 - 2023-02-17
+### Changed
+- Use Rack::Utils::HeaderHash when Rack 2.x is detected
+
 ## 2.0.0 - 2023-02-14
 ### Changed
 - Refactored codebase
