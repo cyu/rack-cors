@@ -66,7 +66,7 @@ module Rack
           'access-control-max-age' => max_age.to_s
         }
         h['access-control-allow-credentials'] = 'true' if credentials
-        defined?(Rack::Utils::HeaderHash) ? Rack::Utils::HeaderHash.new(h) : h
+        header_proc.call(h)
       end
 
       protected
@@ -125,6 +125,16 @@ module Rack
           path
         else
           raise TypeError, path
+        end
+      end
+
+      def header_proc
+        @header_proc ||= begin
+          if defined?(Rack::Headers)
+            ->(h) { h }
+          else
+            ->(h) { Rack::Utils::HeaderHash.new(h) }
+          end
         end
       end
     end
