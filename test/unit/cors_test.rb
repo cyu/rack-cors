@@ -70,7 +70,7 @@ describe Rack::Cors do
       use FakeProxy if options[:proxy]
       map('/') do
         run(lambda do |_env|
-          [200, { 'Content-Type' => 'text/html' }, ['success']]
+          [200, { 'content-type' => 'text/html' }, ['success']]
         end)
       end
     end
@@ -428,7 +428,7 @@ describe Rack::Cors do
       @app ||= Rack::Builder.new do
         use Rack::Cors
         use Rack::Lint
-        run ->(_env) { [200, { 'Content-Type' => 'text/html' }, ['hello']] }
+        run ->(_env) { [200, { 'content-type' => 'text/html' }, ['hello']] }
       end
     end
 
@@ -474,7 +474,7 @@ describe Rack::Cors do
           end
         end
         map('/') do
-          run ->(_env) { [200, { 'Content-Type' => 'text/html' }, ['hello']] }
+          run ->(_env) { [200, { 'content-type' => 'text/html' }, ['hello']] }
         end
       end
     end
@@ -495,7 +495,7 @@ describe Rack::Cors do
           end
         end
         map('/') do
-          run ->(_env) { [200, { 'Content-Type' => 'text/html' }, ['hello']] }
+          run ->(_env) { [200, { 'content-type' => 'text/html' }, ['hello']] }
         end
       end
     end
