@@ -39,12 +39,6 @@ We use `insert_before` to make sure `Rack::Cors` runs at the beginning of the st
 
 See The [Rails Guide to Rack](http://guides.rubyonrails.org/rails_on_rack.html) for more details on rack middlewares or watch the [railscast](http://railscasts.com/episodes/151-rack-middleware).
 
-*Note about Rails 6*: Rails 6 has support for blocking requests from unknown hosts, so origin domains will need to be added there as well.
-
-```ruby
-Rails.application.config.hosts << "product.com"
-```
-
 Read more about it here in the [Rails Guides](https://guides.rubyonrails.org/configuring.html#configuring-middleware)
 
 ### Rack Configuration
@@ -158,3 +152,7 @@ has a custom protocol (`chrome-extension://`, `ionic://`, etc.) simply exclude t
 For example, instead of specifying `chrome-extension://aomjjhallfgjeglblehebfpbcfeobpga` specify `aomjjhallfgjeglblehebfpbcfeobpga` in `origins`.
 
 As of 2.0.0 (currently in RC1), you can specify origins with a custom protocol.
+
+### Rails 6 Host Matching
+
+Rails 6 will block requests from unauthorized hosts, and this issue can be confused as a CORS related error. So in development, if you're making requests using something other than localhost or 127.0.0.1, make sure the server host has been authorized. [More info here](https://guides.rubyonrails.org/configuring.html#actiondispatch-hostauthorization)
