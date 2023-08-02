@@ -4,7 +4,7 @@ require 'rack/builder'
 require 'rack/lint'
 require 'minitest/autorun'
 require 'rack/test'
-require 'mocha/setup'
+require 'mocha/minitest'
 require 'rack/cors'
 require 'ostruct'
 
