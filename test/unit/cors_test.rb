@@ -4,7 +4,7 @@ require 'rack/builder'
 require 'rack/lint'
 require 'minitest/autorun'
 require 'rack/test'
-require 'mocha/setup'
+require 'mocha/minitest'
 require 'rack/cors'
 require 'ostruct'
 
@@ -21,7 +21,7 @@ Rack::Test::Methods.class_eval do
   def_delegator :current_session, :options
 end
 
-module MiniTest::Assertions
+module Minitest::Assertions
   def assert_cors_success(response)
     assert !response.headers['Access-Control-Allow-Origin'].nil?, 'Expected a successful CORS response'
   end
