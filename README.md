@@ -33,7 +33,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
 end
 ```
 
-NOTE: If you create application with `--api` option, configuration automatically generate in `config/initializers/cors.rb`.
+NOTE: If you create application with `--api` option, configuration is automatically generated in `config/initializers/cors.rb`.
 
 We use `insert_before` to make sure `Rack::Cors` runs at the beginning of the stack to make sure it isn't interfered with by other middleware (see `Rack::Cache` note in **Common Gotchas** section). Basic setup examples for Rails 5 & Rails 6 can be found in the examples/ directory.
 
