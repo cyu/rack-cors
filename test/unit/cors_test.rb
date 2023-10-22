@@ -351,6 +351,13 @@ describe Rack::Cors do
       _(last_response.headers['Access-Control-Allow-Origin']).must_equal '*'
     end
 
+    it "should allow resource paths containing $ char" do
+      preflight_request('http://localhost:3000', '/$batch', method: :post )
+      _(last_response).must_render_cors_success
+      _(last_response.headers['Access-Control-Allow-Origin']).wont_equal nil
+      _(last_response.headers['Access-Control-Allow-Methods']).must_equal 'POST'
+    end
+
     it "should allow '/<path>/' resource if match pattern is /<path>/*" do
       preflight_request('http://localhost:3000', '/wildcard/')
       _(last_response).must_render_cors_success

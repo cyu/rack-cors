@@ -106,7 +106,7 @@ module Rack
 
       def compile(path)
         if path.respond_to? :to_str
-          special_chars = %w[. + ( )]
+          special_chars = %w[. + ( ) $]
           pattern =
             path.to_str.gsub(%r{((:\w+)|/\*|[\*#{special_chars.join}])}) do |match|
               case match
