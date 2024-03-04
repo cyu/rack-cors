@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 2.0.2 - 2024-03-04
+### Changed
+- Fix file permission issues with 2.0.1 release
+
 ## 2.0.1 - 2023-02-17
 ### Changed
 - Use Rack::Utils::HeaderHash when Rack 2.x is detected
