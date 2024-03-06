@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## 2.0.2 - 2024-03-04
 ### Changed
 - Fix file permission issues with 2.0.1 release
+  - Security: Fixes CVE-2024-27456, GHSA-785g-282q-pwvx
 
 ## 2.0.1 - 2023-02-17
 ### Changed
