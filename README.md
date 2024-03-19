@@ -129,13 +129,13 @@ Here are some scenarios where incorrect positioning have created issues:
 You can run the following command to see what the middleware stack looks like:
 
 ```bash
-bundle exec rake middleware
+bundle exec rails middleware
 ```
 
 Note that the middleware stack is different in production.  For example, the `ActionDispatch::Static` middleware will not be part of the stack if `config.serve_static_assets = false`.  You can run this to see what your middleware stack looks like in production:
 
 ```bash
-RAILS_ENV=production bundle exec rake middleware
+RAILS_ENV=production bundle exec rails middleware
 ```
 
 ### Serving static files
