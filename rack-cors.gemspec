@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
 
-  s.metadata = {
+  spec.metadata = {
     'changelog_uri' => 'https://github.com/cyu/rack-cors/blob/master/CHANGELOG.md'
   }
 
