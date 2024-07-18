@@ -151,7 +151,7 @@ has a custom protocol (`chrome-extension://`, `ionic://`, etc.) simply exclude t
 
 For example, instead of specifying `chrome-extension://aomjjhallfgjeglblehebfpbcfeobpga` specify `aomjjhallfgjeglblehebfpbcfeobpga` in `origins`.
 
-As of 2.0.0 (currently in RC1), you can specify origins with a custom protocol.
+As of 2.0.0, you can specify origins with a custom protocol.
 
 ### Rails 6 Host Matching
 
