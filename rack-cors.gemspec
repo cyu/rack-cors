@@ -20,7 +20,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.metadata = {
-    'changelog_uri' => 'https://github.com/cyu/rack-cors/blob/master/CHANGELOG.md'
+    'changelog_uri' => 'https://github.com/cyu/rack-cors/blob/master/CHANGELOG.md',
+    'funding_uri' => 'https://github.com/sponsors/cyu'
   }
 
   spec.add_dependency 'rack', '>= 2.0.0'
