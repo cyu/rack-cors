@@ -388,6 +388,106 @@ describe Rack::Cors do
       _(last_response.headers['Access-Control-Allow-Origin']).must_equal 'custom-protocol://abcdefg'
     end
 
+    describe 'wildcard resource' do
+      let(:app) do
+        test = self
+        Rack::Builder.new do
+          use CaptureResult, holder: test
+          use Rack::Cors, debug: true, logger: Logger.new(StringIO.new) do
+            allow do
+              origins '*'
+              resource '/data/*'
+            end
+          end
+          map('/') do
+            run(lambda do |_env|
+              [200, { 'content-type' => 'text/html' }, ['success']]
+            end)
+          end
+        end
+      end
+
+      it 'allows /data' do
+        preflight_request('http://localhost:3000', '/data')
+        _(last_response).must_render_cors_success
+      end
+
+      it 'allows /data/one' do
+        preflight_request('http://localhost:3000', '/data/one')
+        _(last_response).must_render_cors_success
+      end
+
+      it 'does not allow /data/one/two' do
+        preflight_request('http://localhost:3000', '/data/one/two')
+        _(last_response).wont_render_cors_success
+      end
+
+      it 'does not allow /data_private' do
+        preflight_request('http://localhost:3000', '/data_private')
+        _(last_response).wont_render_cors_success
+      end
+
+      it 'does not allow /data_private/one' do
+        preflight_request('http://localhost:3000', '/data_private/one')
+        _(last_response).wont_render_cors_success
+      end
+
+      it 'does not allow /data_private/one/two' do
+        preflight_request('http://localhost:3000', '/data_private/one/two')
+        _(last_response).wont_render_cors_success
+      end
+    end # wildcard resource
+
+    describe 'nested wildcard resource' do
+      let(:app) do
+        test = self
+        Rack::Builder.new do
+          use CaptureResult, holder: test
+          use Rack::Cors, debug: true, logger: Logger.new(StringIO.new) do
+            allow do
+              origins '*'
+              resource '/data/**/*'
+            end
+          end
+          map('/') do
+            run(lambda do |_env|
+              [200, { 'content-type' => 'text/html' }, ['success']]
+            end)
+          end
+        end
+      end
+
+      it 'allows /data' do
+        preflight_request('http://localhost:3000', '/data')
+        _(last_response).must_render_cors_success
+      end
+
+      it 'allows /data/one' do
+        preflight_request('http://localhost:3000', '/data/one')
+        _(last_response).must_render_cors_success
+      end
+
+      it 'allows /data/one/two' do
+        preflight_request('http://localhost:3000', '/data/one/two')
+        _(last_response).must_render_cors_success
+      end
+
+      it 'does not allow /data_private' do
+        preflight_request('http://localhost:3000', '/data_private')
+        _(last_response).wont_render_cors_success
+      end
+
+      it 'does not allow /data_private/one' do
+        preflight_request('http://localhost:3000', '/data_private/one')
+        _(last_response).wont_render_cors_success
+      end
+
+      it 'does not allow /data_private/one/two' do
+        preflight_request('http://localhost:3000', '/data_private/one/two')
+        _(last_response).wont_render_cors_success
+      end
+    end # nested wildcard resource
+
     describe '' do
       let(:app) do
         test = self
