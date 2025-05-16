@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## 3.0.0 - 2025-05-16
 ### Changed
 - Update Rack dependency to >= 3.0.14
+- Remove support for Ruby 2.3
 
 ## 2.0.2 - 2024-03-04
 ### Changed
