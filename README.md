@@ -111,6 +111,12 @@ A Resource path can be specified as exact string match (`/path/to/file.txt`) or 
 
 * When specifying an HTTP origin that uses the scheme's default port (e.g. `http://example.test:80`), some clients may not strip the port which could result in unexpected blocked requests (additional context [here](https://github.com/request/request/pull/2904)).
 
+### Raising from underlying middleware / application
+
+Rack::Cors will not add `Origin` headers if an underlying middleware / application raises an exception. The exception will be permitted to propagate through the call stack, and the client which honors cross-origin policies will refuse to parse the response it receives. The client will report an error similar to `Access to ... has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.`
+
+A way to mitigate that issue is to use a generic error page middleware (or [Rack::ShowExceptions](https://www.rubydoc.info/gems/rack/Rack/ShowExceptions) but it is not safe to use in production). Once the exception gets suppressed `Access-Control-Allow-Origin` and other headers will be set correctly.
+
 ### Testing Postman and/or cURL
 
 * Make sure you're passing in an `Origin:` header.  That header is required to trigger a CORS response.  Here's [a good SO post](https://stackoverflow.com/questions/12173990/how-can-you-debug-a-cors-request-with-curl) about using cURL for testing CORS.
